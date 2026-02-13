@@ -25,6 +25,11 @@ export class ScriptGeneratorManager {
         this.isGenerating = false;
 
         this.view = new ScriptGenView();
+
+        // Optimization 8: Undo/Redo Stack
+        this.historyStack = [];
+        this.redoStack = [];
+        this.maxStackSize = 30;
     }
 
     init(containerId) {
@@ -146,6 +151,23 @@ export class ScriptGeneratorManager {
         // Visualize
         document.getElementById('sg-visualize-btn').addEventListener('click', () => this.visualizeScript());
 
+        // Optimization 8: Undo/Redo Bindings
+        document.getElementById('sg-undo-btn').addEventListener('click', () => this.undo());
+        document.getElementById('sg-redo-btn').addEventListener('click', () => this.redo());
+
+        // Optimization 7: Visualization Retry Binding (Delegation)
+        const visOutput = document.getElementById('sg-visualize-output');
+        if (visOutput) {
+            visOutput.addEventListener('click', (e) => {
+                const retryBtn = e.target.closest('.sg-retry-vis-btn');
+                if (retryBtn) {
+                    const prompt = retryBtn.dataset.prompt;
+                    const itemContainer = retryBtn.closest('.sg-vis-item');
+                    this.retrySingleVisualization(prompt, itemContainer);
+                }
+            });
+        }
+
         // Sliders live update
         document.getElementById('sg-scene-count').addEventListener('input', (e) => {
             document.getElementById('sg-scene-val').textContent = e.target.value;
@@ -201,6 +223,176 @@ export class ScriptGeneratorManager {
             this.referenceImageBase64 = null;
             this.view.hideImagePreview();
         });
+
+        // 监听输出区域的编辑事件 (Optimization 2)
+        const outputEl = document.getElementById('sg-output');
+        if (outputEl) {
+            outputEl.addEventListener('input', (e) => {
+                if (e.target.classList.contains('sg-editable-td')) {
+                    this.syncTableToScript();
+                }
+            });
+
+            // Handle button clicks in output area (Optimization 5 & 6)
+            outputEl.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+
+                if (btn.id === 'sg-add-row-btn') {
+                    this.handleAddRow();
+                } else if (btn.classList.contains('sg-row-regen-btn')) {
+                    this.handleRegenRow(btn.closest('tr'));
+                } else if (btn.classList.contains('sg-row-del-btn')) {
+                    this.handleDeleteRow(btn.closest('tr'));
+                }
+            });
+        }
+    }
+
+    syncTableToScript() {
+        const outputEl = document.getElementById('sg-output');
+        if (!outputEl) return;
+
+        const tables = outputEl.querySelectorAll('table');
+        if (tables.length === 0) return;
+
+        // 获取当前脚本中非表格部分和表格部分的结构
+        // 这是一个简化的同步逻辑：假设脚本中只有一个表格，或者我们只同步第一个表格
+        // 更好的办法是解析整个 HTML 回 Markdown
+
+        let fullMarkdown = "";
+
+        // 遍历输出区域的所有子元素，将其转化回 Markdown
+        Array.from(outputEl.children).forEach(child => {
+            if (child.tagName === 'TABLE') {
+                fullMarkdown += "\n" + this.htmlTableToMarkdown(child) + "\n";
+            } else if (child.tagName.startsWith('H')) {
+                const level = child.tagName[1];
+                fullMarkdown += "\n" + "#".repeat(level) + " " + child.innerText + "\n";
+            } else if (child.tagName === 'P') {
+                fullMarkdown += "\n" + child.innerText + "\n";
+            } else if (child.tagName === 'UL' || child.tagName === 'OL') {
+                Array.from(child.children).forEach(li => {
+                    fullMarkdown += "- " + li.innerText + "\n";
+                });
+            } else {
+                fullMarkdown += "\n" + child.innerText + "\n";
+            }
+        });
+
+        this.generatedScript = fullMarkdown.trim();
+        this.pushToHistory();
+
+        // 如果有 ID，自动排队更新数据库 (防抖处理)
+        if (this.currentScriptId) {
+            if (this.saveTimeout) clearTimeout(this.saveTimeout);
+            this.saveTimeout = setTimeout(async () => {
+                try {
+                    await ScriptDB.updateScript(this.currentScriptId, { content: this.generatedScript });
+                } catch (e) {
+                    console.error("Auto-sync failed", e);
+                }
+            }, 2000);
+        }
+    }
+
+    htmlTableToMarkdown(table) {
+        let markdown = "";
+        const rows = Array.from(table.rows);
+        const isScriptTable = table.querySelector('.sg-table-actions-cell') !== null || table.querySelector('.sg-table-actions') !== null;
+
+        rows.forEach((row, i) => {
+            let cells = Array.from(row.cells);
+
+            // Optimization 6: Skip the actions column if it exists
+            if (isScriptTable) {
+                cells = cells.slice(0, -1);
+            }
+
+            const cellText = cells.map(c => c.innerText.replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim()).join(' | ');
+            markdown += `| ${cellText} |\n`;
+
+            if (i === 0) {
+                // Add separator row
+                const separator = cells.map(() => '---').join(' | ');
+                markdown += `| ${separator} |\n`;
+            }
+        });
+
+        return markdown;
+    }
+
+    handleAddRow() {
+        const table = document.querySelector('#sg-output table');
+        if (!table) return;
+        const tbody = table.querySelector('tbody') || table;
+        const lastRow = tbody.rows[tbody.rows.length - 1];
+        const newRow = lastRow.cloneNode(true);
+
+        // Clear content
+        Array.from(newRow.cells).forEach((cell, idx) => {
+            if (cell.classList.contains('sg-editable-td')) {
+                if (idx === 0) {
+                    // Auto-increment scene number
+                    const lastNum = parseInt(lastRow.cells[0].innerText) || 0;
+                    cell.innerText = lastNum + 1;
+                } else {
+                    cell.innerText = "";
+                }
+            }
+        });
+
+        tbody.appendChild(newRow);
+        this.syncTableToScript();
+    }
+
+    handleDeleteRow(row) {
+        if (confirm('确定要删除这一行吗？')) {
+            row.remove();
+            this.syncTableToScript();
+        }
+    }
+
+    async handleRegenRow(row) {
+        if (this.isGenerating) return;
+
+        const cells = Array.from(row.cells);
+        const originalContent = cells.map(c => c.innerText).join(' | ');
+
+        UI.showProgress('AI 正在重修镜头...');
+        btn = row.querySelector('.sg-row-regen-btn');
+        if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        try {
+            const prompt = `你是一位剧本医生。请重写下面这一行脚本镜头，使其更具冲击力和视觉感。保持原有的表格列格式。
+当前行内容：${originalContent}
+背景要求：${document.getElementById('sg-theme').value}
+输出格式：仅输出一行 Markdown 表格内容，例如：| 1 | 特写 | 2s | 眼神犀利 | ... |`;
+
+            const res = await API.callQwenAPI(prompt);
+            const content = res.choices ? res.choices[0].message.content : (res.output ? res.output.text : res);
+
+            // Clean markdown syntax if AI returned full table
+            const rowMatch = content.match(/\|[\s\S]*?\|/);
+            if (rowMatch) {
+                const newData = rowMatch[0].split('|').map(s => s.trim()).filter(s => s !== "");
+                // Fill back to cells (skip last column)
+                newData.forEach((val, idx) => {
+                    if (cells[idx] && cells[idx].classList.contains('sg-editable-td')) {
+                        cells[idx].innerText = val;
+                    }
+                });
+                this.syncTableToScript();
+                UI.showSuccess('镜头已重修');
+            } else {
+                throw new Error("格式解析失败");
+            }
+        } catch (e) {
+            UI.showError('重修失败: ' + e.message);
+        } finally {
+            UI.hideProgress();
+            if (btn) btn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+        }
     }
 
     bindExportButtons() {
@@ -739,8 +931,15 @@ export class ScriptGeneratorManager {
 
         try {
             // 1. Extract Visual Descriptions using LLM
+            // Optimization 7: Style Locking logic
+            const useStyleLock = document.getElementById('sg-style-lock')?.checked || false;
+            let styleContext = "";
+            if (useStyleLock) {
+                styleContext = `。请保持视觉风格的一致性：统一的色调、构图逻辑以及人物特征。`;
+            }
+
             const extractPrompt = `
-            你是一位分镜师。请从以下脚本中提取 3-5 个最关键、最具视觉冲击力的画面描述。
+            你是一位分镜师${styleContext}。请从以下脚本中提取 3-5 个最关键、最具视觉冲击力的画面描述。
             
             【脚本内容】：
             ${this.generatedScript}
@@ -819,15 +1018,18 @@ export class ScriptGeneratorManager {
 
                 } catch (e) {
                     console.error("Image Gen Error", e);
-                    imgContainer.innerHTML = `<div style="color:red; font-size:12px;">生成失败</div>`;
+                    imgContainer.innerHTML = `
+                        <div style="color:#ff4757; font-size:12px; padding:10px; border:1px dashed #ff4757; border-radius:4px; text-align:center;">
+                            <i class="fas fa-exclamation-triangle"></i> 生成失败<br>
+                            <button class="sg-retry-vis-btn btn btn-secondary btn-small" style="margin-top:5px;" data-prompt="${promptText.replace(/"/g, '&quot;')}">🔄 重试</button>
+                        </div>
+                    `;
                     performanceMonitor.recordAPICall('image_generation', 0, false, e);
                 }
             };
 
-            // Sequential generation
-            for (let i = 0; i < prompts.length; i++) {
-                await processImage(prompts[i], i);
-            }
+            // Parallel generation
+            await Promise.all(prompts.map((p, i) => processImage(p, i)));
 
             // Cache & Save
             if (visualData.length > 0) {
@@ -973,5 +1175,64 @@ JSON output only.`;
         } finally {
             UI.hideProgress();
         }
+    }
+
+    async retrySingleVisualization(promptText, container) {
+        try {
+            container.innerHTML = `<div class="loading-spinner"></div><p style="font-size:11px;color:#666;margin-top:5px;">正在重试...</p>`;
+            const apiBase = CONFIG.API_BASE_URL || '';
+            const response = await fetch(`${apiBase}/api/proxy/image`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: promptText,
+                    model: "flux-merge",
+                    size: "1024*1024"
+                })
+            });
+
+            if (!response.ok) throw new Error(`Status: ${response.status}`);
+            const data = await response.json();
+            const imgUrl = data.url;
+            if (!imgUrl) throw new Error("No URL");
+
+            container.innerHTML = `
+                <img src="${imgUrl}" style="width:100%; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+                <div style="margin-top:5px; font-size:12px; color:#333; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${promptText}</div>
+            `;
+        } catch (e) {
+            container.innerHTML = `
+                <div style="color:#ff4757; font-size:12px; padding:10px; border:1px dashed #ff4757; border-radius:4px; text-align:center;">
+                    <i class="fas fa-exclamation-triangle"></i> 重试失败<br>
+                    <button class="sg-retry-vis-btn btn btn-secondary btn-small" style="margin-top:5px;" data-prompt="${promptText.replace(/"/g, '&quot;')}">🔄 再试一次</button>
+                </div>
+            `;
+        }
+    }
+
+    pushToHistory() {
+        if (!this.generatedScript) return;
+        if (this.historyStack.length > 0 && this.historyStack[this.historyStack.length - 1] === this.generatedScript) return;
+
+        this.historyStack.push(this.generatedScript);
+        if (this.historyStack.length > this.maxStackSize) this.historyStack.shift();
+        this.redoStack = [];
+    }
+
+    undo() {
+        if (this.historyStack.length <= 1) return;
+        const current = this.historyStack.pop();
+        this.redoStack.push(current);
+        const previous = this.historyStack[this.historyStack.length - 1];
+        this.generatedScript = previous;
+        this.view.renderOutput(this.generatedScript);
+    }
+
+    redo() {
+        if (this.redoStack.length === 0) return;
+        const next = this.redoStack.pop();
+        this.historyStack.push(next);
+        this.generatedScript = next;
+        this.view.renderOutput(this.generatedScript);
     }
 }

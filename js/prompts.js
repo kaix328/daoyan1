@@ -130,6 +130,12 @@ export function buildVideoPrompt(analysisResult, style) {
         case 'cyberpunk':
             styleInstruction = '目标风格: 赛博朋克，霓虹黑色电影美学，未来感，高对比度。';
             break;
+        case 'nolan':
+            styleInstruction = '目标风格: 诺兰风格，冷色调，IMAX画质，写实工业质感，高反差。';
+            break;
+        case 'snyder':
+            styleInstruction = '目标风格: 扎克施奈德风格，暴力美学，暗色调，超高对比度，史诗感。';
+            break;
         default:
             styleInstruction = '目标风格: 根据分镜内容自动适配最合适的视觉风格。';
     }
@@ -271,6 +277,16 @@ export function buildScriptGenPrompt(params) {
 - **模块**：黄金开头、干货输出1、干货输出2、互动引导。
 - **核心金句**：适合口播的短句，包含逻辑重音标注。
 - **画面/B-roll**：配合口播展示的图片、图表或空镜。`;
+    } else if (duration.includes('min') && parseInt(duration) >= 3) {
+        structurePrompt = `
+# 2. 长视频深度剧本 (Long-form Narrative)
+由于目标时长较长(${duration})，请采用**三幕式或多幕式结构**：
+- **第一幕：背景与铺垫** (占20%)：建立世界观/引入问题。
+- **第二幕：展开与冲突** (占60%)：层层递进的细节、反转或深度分析。
+- **第三幕：高潮与总结** (占20%)：给出结论、情感升华或行动号召。
+
+请使用 Markdown 表格输出详细分镜表，表头包含：| 幕次 | 序号 | 画面内容 | 运镜建议 | 音效/台词 |
+- **注意**：针对长视频，景别变化应更加多元，注重节奏起伏。`;
     } else {
         structurePrompt = `
 # 2. 详细分镜表

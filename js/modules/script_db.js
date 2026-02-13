@@ -1,7 +1,7 @@
 import { CONFIG } from '../config.js';
 
 // 使用CONFIG中的API基础URL，如果没有则使用当前源
-const API_BASE = CONFIG.API_BASE_URL || window.location.origin;  
+const API_BASE = CONFIG.API_BASE_URL || window.location.origin;
 
 export const ScriptDB = {
     async getHistory() {
@@ -59,7 +59,22 @@ export const ScriptDB = {
             return false;
         }
     },
-    
+
+    async updateScript(id, updates) {
+        try {
+            const res = await fetch(`${API_BASE}/api/scripts/save`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, ...updates })
+            });
+            if (!res.ok) throw new Error('Update failed');
+            return await res.json();
+        } catch (e) {
+            console.error('Update script failed:', e);
+            throw e;
+        }
+    },
+
     async exportDocx(content, filename) {
         try {
             const res = await fetch(`${API_BASE}/api/export/docx`, {
@@ -68,7 +83,7 @@ export const ScriptDB = {
                 body: JSON.stringify({ content })
             });
             if (!res.ok) throw new Error('Export failed');
-            
+
             const blob = await res.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');

@@ -70,6 +70,8 @@ export class ScriptGenView {
                                 <option value="30s">30秒 (标准)</option>
                                 <option value="60s">60秒 (完整)</option>
                                 <option value="3min">3分钟 (长视频)</option>
+                                <option value="5min">5分钟 (剧集级)</option>
+                                <option value="10min">10分钟 (重磅专题)</option>
                             </select>
                         </div>
                     </div>
@@ -250,6 +252,8 @@ export class ScriptGenView {
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                             <h3 style="margin:0;"><i class="fas fa-file-alt"></i> 脚本内容</h3>
                             <div class="sg-actions">
+                                <button id="sg-undo-btn" class="btn btn-secondary btn-small" title="撤销"><i class="fas fa-undo"></i></button>
+                                <button id="sg-redo-btn" class="btn btn-secondary btn-small" title="重做"><i class="fas fa-redo"></i></button>
                                 <button id="sg-fav-btn" class="btn btn-secondary btn-small" title="收藏"><i class="far fa-heart"></i></button>
                                 <button id="sg-copy-btn" class="btn btn-secondary btn-small"><i class="fas fa-copy"></i> 复制</button>
                                 <button id="sg-export-pdf-btn" class="btn btn-secondary btn-small"><i class="fas fa-file-pdf"></i> PDF</button>
@@ -289,7 +293,10 @@ export class ScriptGenView {
                     <div id="tab-visualize" class="sg-tab-content">
                         <div class="sg-section">
                             <h3 style="margin:0;">AI 分镜绘画</h3>
-                            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">提取脚本中的关键画面，自动生成分镜草图。</p>
+                            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:10px;">提取脚本中的关键画面，自动生成分镜草图。</p>
+                            <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-muted); margin-bottom:15px; cursor:pointer;">
+                                <input type="checkbox" id="sg-style-lock" checked> 启用视觉一致性锁定 (Style Consistency)
+                            </label>
                             <button id="sg-visualize-btn" class="btn btn-primary btn-block"><i class="fas fa-paint-brush"></i> 生成分镜图</button>
                         </div>
                         <div id="sg-visualize-output" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px; margin-top:20px;"></div>
@@ -344,8 +351,50 @@ export class ScriptGenView {
     renderOutput(content) {
         const outputEl = document.getElementById('sg-output');
         if (!outputEl) return;
+
         if (window.marked) {
-            outputEl.innerHTML = window.marked.parse(content);
+            let html = window.marked.parse(content);
+
+            // Optimization 2 & 6: Enhance tables to be interactive
+            // 1. Add Actions column to headers
+            html = html.replace(/<thead>\s*<tr>([\s\S]*?)<\/tr>\s*<\/thead>/g, (match, cells) => {
+                if (cells.includes('序号') || cells.includes('景别')) {
+                    return `<thead><tr>${cells}<th class="sg-table-actions">操作</th></tr></thead>`;
+                }
+                return match;
+            });
+
+            // 2. Add action buttons and editable cells to body
+            html = html.replace(/<tbody>\s*([\s\S]*?)\s*<\/tbody>/g, (match, rowsHTML) => {
+                if (rowsHTML.includes('<td>')) {
+                    const rows = rowsHTML.split(/<\/tr>\s*<tr>/);
+                    const enhancedRows = rows.map(row => {
+                        // Check if it's a script table row (has multiple tds)
+                        if ((row.match(/<td/g) || []).length >= 3) {
+                            return row.replace(/<td/g, '<td contenteditable="true" class="sg-editable-td"') +
+                                `<td class="sg-table-actions-cell">
+                                        <button class="sg-row-regen-btn" title="重修此镜头"><i class="fas fa-sync-alt"></i></button>
+                                        <button class="sg-row-del-btn" title="删除"><i class="fas fa-trash-alt"></i></button>
+                                   </td>`;
+                        }
+                        return row;
+                    });
+                    return `<tbody><tr>${enhancedRows.join('</tr><tr>')}</tr></tbody>`;
+                }
+                return match;
+            });
+
+            outputEl.innerHTML = html;
+
+            // Add "Add Row" button if there's a table
+            if (outputEl.querySelector('table')) {
+                const addBtn = document.createElement('button');
+                addBtn.id = 'sg-add-row-btn';
+                addBtn.className = 'btn btn-secondary btn-small';
+                addBtn.style.margin = '10px 0';
+                addBtn.innerHTML = '<i class="fas fa-plus"></i> 添加镜头行';
+                outputEl.appendChild(addBtn);
+            }
         } else {
             outputEl.innerHTML = `<pre>${content}</pre>`;
         }
