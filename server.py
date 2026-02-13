@@ -49,6 +49,15 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({'exists': bool(key)}).encode())
             return
 
+        if self.path == '/api/settings/model':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            model = db_get_setting('default_model') or 'qwen-plus'
+            self.wfile.write(json.dumps({'model': model}).encode())
+            return
+
         if self.path == '/api/info':
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -233,12 +242,32 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 api_key = data.get('api_key')
                 if api_key:
                     db_save_setting('api_key', api_key)
+                    print("🔑 API Key updated via settings")
                     self.send_response(200)
                     self.send_header('Content-Type', 'application/json')
                     self.end_headers()
                     self.wfile.write(json.dumps({'status': 'ok'}).encode())
                 else:
                     self.send_error(400, "Missing api_key")
+            except Exception as e:
+                self.send_error(500, str(e))
+            return
+
+        if self.path == '/api/settings/model':
+            try:
+                content_length = int(self.headers['Content-Length'])
+                post_data = self.rfile.read(content_length)
+                data = json.loads(post_data.decode())
+                model = data.get('model')
+                if model:
+                    db_save_setting('default_model', model)
+                    print(f"🤖 Default Model updated to: {model}")
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({'status': 'ok'}).encode())
+                else:
+                    self.send_error(400, "Missing model")
             except Exception as e:
                 self.send_error(500, str(e))
             return
@@ -497,29 +526,38 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     'Authorization': auth_header
                 }
                 
+                print(f"🚀 Proxying to: {TARGET_URL}")
                 req = urllib.request.Request(TARGET_URL, data=post_data, headers=headers, method='POST')
                 
-                with urllib.request.urlopen(req, timeout=300) as response:
-                    self.send_response(response.status)
+                try:
+                    with urllib.request.urlopen(req, timeout=300) as response:
+                        res_data = response.read()
+                        print(f"✅ API Response: {response.status}")
+                        self.send_response(response.status)
+                        self.send_header('Content-Type', 'application/json')
+                        self.send_header('Access-Control-Allow-Origin', '*')
+                        self.end_headers()
+                        self.wfile.write(res_data)
+                except urllib.error.HTTPError as e:
+                    error_content = e.read().decode()
+                    print(f"❌ API Error: {e.code} - {error_content}")
+                    self.send_response(e.code)
                     self.send_header('Content-Type', 'application/json')
                     self.send_header('Access-Control-Allow-Origin', '*')
                     self.end_headers()
-                    self.wfile.write(response.read())
-                    
-            except urllib.error.HTTPError as e:
-                self.send_response(e.code)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(e.read())
-            except Exception as e:
-                print(f"Proxy Error: {e}")
-                self.send_response(500)
-                self.send_header('Content-Type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                response_data = json.dumps({'error': {'message': str(e)}})
-                self.wfile.write(response_data.encode())
+                    self.wfile.write(error_content.encode())
+                except Exception as e:
+                    print(f"❌ Proxy Exception: {str(e)}")
+                    self.send_response(500)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.end_headers()
+                    response_data = json.dumps({'error': {'message': str(e)}})
+                    self.wfile.write(response_data.encode())
+            except Exception as outer_e:
+                print(f"❌ Outer Proxy Error: {outer_e}")
+                self.send_error(500, str(outer_e))
+            return
         else:
             self.send_error(404, "Endpoint not found")
 

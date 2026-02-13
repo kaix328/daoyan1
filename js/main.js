@@ -12,11 +12,11 @@ import { ScriptGeneratorManager } from './modules/script_gen_ui.js';
 let state = {
     apiKey: '', // Removed localStorage reading, rely on backend
     hasBackendKey: false, // Track if backend has key
-    images: [], 
+    images: [],
     currentAnalysisId: null,
-    historyCursor: null, 
-    isProjectActive: false, 
-    isInitialRecord: false 
+    historyCursor: null,
+    isProjectActive: false,
+    isInitialRecord: false
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -41,7 +41,7 @@ async function checkBackendKey() {
         const data = await res.json();
         state.hasBackendKey = data.exists;
         console.log("🔑 Backend API Key Status:", data.exists ? "Configured" : "Missing");
-        
+
         // Update Settings Input UI if exists
         if (data.exists) {
             const input = document.getElementById('apiKeyInput');
@@ -50,7 +50,7 @@ async function checkBackendKey() {
                 input.value = "";
             }
         }
-    } catch(e) {
+    } catch (e) {
         console.error("Failed to check backend key", e);
         state.hasBackendKey = false;
     }
@@ -79,14 +79,14 @@ function init() {
     scriptGen.init('scriptContent');
 
     console.log("🚀 Dashboard Layout: Initializing...");
-    
+
     // 修改：刷新页面时默认隐藏侧边栏，显示欢迎屏幕
     setSidebarVisible(false);
-    
+
     // Init History
     History.initDB().then(async () => {
         loadHistory();
-        
+
         // 检查是否有保存的会话
         const lastId = localStorage.getItem('lastAnalysisId');
         console.log("📦 Checking Session:", lastId ? "Found" : "None");
@@ -95,7 +95,7 @@ function init() {
             // 有会话记录，尝试恢复
             updateWorkspaceState(); // Locks initially
             await restoreLastSession();
-            
+
             // 只有项目成功恢复后才显示侧边栏
             if (state.isProjectActive) {
                 setSidebarVisible(true);
@@ -125,7 +125,7 @@ function bindEvents() {
     // Sidebar Toggle
     const sidebar = document.getElementById('appSidebar');
     const toggleBtn = document.getElementById('sidebarToggleBtn');
-    
+
     // Restore state
     const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
     if (isCollapsed && sidebar) {
@@ -146,7 +146,7 @@ function bindEvents() {
             // Check if tools view is active
             const toolsView = document.getElementById('toolsWorkspace');
             const scriptView = document.getElementById('scriptWorkspace');
-            
+
             // If in Tools or Script view, return to Welcome Screen (and hide sidebar)
             if ((toolsView && toolsView.style.display === 'block') || (scriptView && scriptView.style.display === 'block')) {
                 if (toolsView) toolsView.style.display = 'none';
@@ -162,18 +162,18 @@ function bindEvents() {
                 state.images = [];
                 state.isInitialRecord = false;
                 localStorage.removeItem('lastAnalysisId');
-                
+
                 updateWorkspaceState();
-                
+
                 // Clear active state in sidebar
                 document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
-                
+
                 // Clear inputs
                 UI.resetImagePreview();
                 UI.clearResult();
                 const nameInput = document.getElementById('projectName');
                 if (nameInput) nameInput.value = '';
-                
+
                 setSidebarVisible(false); // Hide Sidebar on Home
             }
         });
@@ -191,23 +191,23 @@ function bindEvents() {
             createNewProject();
         });
     }
-    
+
     // Standalone Tools Logic
     const openToolsBtn = document.getElementById('openColorGradingBtn');
     const openScriptBtn = document.getElementById('openScriptGenBtn');
     const closeToolsBtn = document.getElementById('closeToolsBtn');
     const closeScriptBtn = document.getElementById('closeScriptBtn');
-    
+
     // Function to handle tool opening
     const openTool = (toolId) => {
         const ws = document.getElementById('welcomeScreen');
         const wa = document.getElementById('workspaceArea');
         const tool = document.getElementById(toolId);
-        
+
         if (ws) ws.style.display = 'none';
         if (wa) wa.style.display = 'none';
         if (tool) tool.style.display = 'block';
-        
+
         setSidebarVisible(false); // Hide sidebar in tools
     };
 
@@ -215,7 +215,7 @@ function bindEvents() {
     const closeTool = (toolId) => {
         const tool = document.getElementById(toolId);
         if (tool) tool.style.display = 'none';
-        
+
         // Return to previous state
         if (state.isProjectActive) {
             const wa = document.getElementById('workspaceArea');
@@ -231,7 +231,7 @@ function bindEvents() {
     if (openToolsBtn) {
         openToolsBtn.addEventListener('click', () => openTool('toolsWorkspace'));
     }
-    
+
     if (openScriptBtn) {
         openScriptBtn.addEventListener('click', () => openTool('scriptWorkspace'));
     }
@@ -239,7 +239,7 @@ function bindEvents() {
     if (closeToolsBtn) {
         closeToolsBtn.addEventListener('click', () => closeTool('toolsWorkspace'));
     }
-    
+
     if (closeScriptBtn) {
         closeScriptBtn.addEventListener('click', () => closeTool('scriptWorkspace'));
     }
@@ -515,15 +515,15 @@ function processImageFiles(files) {
 
                     // AUTO-SAVE IMAGES TO HISTORY
                     if (state.currentAnalysisId) {
-                         History.getHistoryItemById(state.currentAnalysisId).then(item => {
-                             if (item) {
-                                 item.images = state.images.map(img => ({ data: img.data }));
-                                 History.updateHistoryItem(item).then(() => {
-                                     console.log("💾 Images auto-saved to project");
-                                     loadHistory(); // Refresh thumbnail in list
-                                 });
-                             }
-                         });
+                        History.getHistoryItemById(state.currentAnalysisId).then(item => {
+                            if (item) {
+                                item.images = state.images.map(img => ({ data: img.data }));
+                                History.updateHistoryItem(item).then(() => {
+                                    console.log("💾 Images auto-saved to project");
+                                    loadHistory(); // Refresh thumbnail in list
+                                });
+                            }
+                        });
                     }
                 }
             })
@@ -636,7 +636,7 @@ async function analyzeStoryboard() {
 
 async function generateVideoPrompt() {
     const resultText = document.getElementById('analysisResult').innerText;
-    
+
     // Check if result is just the placeholder
     if (!resultText || resultText.includes('等待分析结果') || resultText.includes('请在左侧上传')) {
         UI.showError('请先上传图片并完成分镜分析，然后再生成提示词。');
@@ -701,7 +701,7 @@ async function generateVideoPrompt() {
 
 async function analyzeSoundAndMusic() {
     console.log("🎵 analyzeSoundAndMusic triggered");
-    
+
     const resultEl = document.getElementById('analysisResult');
     if (!resultEl) {
         console.error("❌ analysisResult element not found!");
@@ -733,16 +733,16 @@ async function analyzeSoundAndMusic() {
     try {
         const style = document.getElementById('musicStyle').value;
         console.log("🎹 Music Style:", style);
-        
+
         const prompt = Prompts.buildMusicAnalysisPrompt(resultText, style);
         console.log("🚀 Sending API Request (Text-only mode)...");
 
         const musicAnalysis = await API.callQwenAPI(prompt, null, state.apiKey || null);
         console.log("✅ API Response Received. Length:", musicAnalysis.length);
-        
+
         console.log("🎨 Calling UI.displayMusicAnalysis...");
         UI.displayMusicAnalysis(musicAnalysis);
-        
+
         // Save to History
         if (state.currentAnalysisId) {
             console.log("💾 Saving music analysis to history...");
@@ -988,7 +988,7 @@ function updateWorkspaceState() {
     const welcome = document.getElementById('welcomeScreen');
     const workspace = document.getElementById('workspaceArea');
     const toolsView = document.getElementById('toolsWorkspace');
-    
+
     // Ensure tools view is hidden when switching project states
     if (toolsView) toolsView.style.display = 'none';
 
@@ -1073,7 +1073,7 @@ async function createNewProject() {
     // OPTIMIZATION: If current project is an empty shell (created but not analyzed), reuse it!
     if (state.currentAnalysisId && state.isInitialRecord) {
         console.log("♻️ Reusing empty project shell:", state.currentAnalysisId);
-        
+
         try {
             const updatedRecord = {
                 id: state.currentAnalysisId,
@@ -1082,16 +1082,16 @@ async function createNewProject() {
                 result: '项目已创建',
                 timestamp: new Date().toISOString()
             };
-            
+
             await History.saveAnalysis(updatedRecord);
-            
+
             // Update UI State
             document.getElementById('projectName').value = projectName;
             UI.showSuccess(`项目已重命名为: ${projectName}`);
-            
+
             // Refresh List
             await loadHistory();
-            
+
             // Auto-select
             const filterSelect = document.getElementById('projectFilter');
             if (filterSelect) {
@@ -1099,7 +1099,7 @@ async function createNewProject() {
                 filterSelect.dispatchEvent(new Event('change'));
             }
             return; // Stop here, do not create new
-        } catch(e) {
+        } catch (e) {
             console.error("Failed to reuse project", e);
             // Fallback to create new
         }
@@ -1138,13 +1138,13 @@ async function createNewProject() {
             timestamp: new Date().toISOString()
         };
         const id = await History.saveAnalysis(initialRecord);
-         state.currentAnalysisId = id;
-         state.isInitialRecord = true;
-         localStorage.setItem('lastAnalysisId', id);
-        
+        state.currentAnalysisId = id;
+        state.isInitialRecord = true;
+        localStorage.setItem('lastAnalysisId', id);
+
         // Refresh sidebar list and filter
         await loadHistory();
-        
+
         // Auto-select the new project in filter
         const filterSelect = document.getElementById('projectFilter');
         if (filterSelect) {
@@ -1189,60 +1189,78 @@ function initSettings() {
         `;
         document.body.appendChild(modal);
     }
-    
+
     // Bind Close (ensure only bound once or use onclick)
     const closeBtn = modal.querySelector('.close');
     if (closeBtn) {
         closeBtn.onclick = () => modal.style.display = 'none';
     }
-    
+
     // Bind Save
     const saveBtn = modal.querySelector('#saveSettingsBtn');
     if (saveBtn) {
-        // Use onclick to avoid multiple listeners if init called multiple times
         saveBtn.onclick = async () => {
             const key = document.getElementById('apiKeyInput').value.trim();
-            if (key) {
-                try {
-                    const apiBase = CONFIG.API_BASE_URL || '';
-                    const res = await fetch(`${apiBase}/api/settings/apikey`, {
+            const model = document.getElementById('modelSelect').value;
+
+            try {
+                const apiBase = CONFIG.API_BASE_URL || '';
+
+                // 1. Save API Key if provided
+                if (key) {
+                    const resKey = await fetch(`${apiBase}/api/settings/apikey`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ api_key: key })
                     });
-                    if (res.ok) {
-                        UI.showSuccess('API Key 已保存');
-                        modal.style.display = 'none';
-                        // Clear local state key to force backend usage (optional, but good practice)
-                        state.apiKey = ''; 
-                    } else {
-                        throw new Error('Save failed');
-                    }
-                } catch (e) {
-                    UI.showError('保存失败: ' + e.message);
+                    if (!resKey.ok) throw new Error('API Key save failed');
+                    state.apiKey = ''; // Clear local state key
                 }
-            } else {
-                UI.showError('请输入有效的 API Key');
+
+                // 2. Save Model Preference
+                const resModel = await fetch(`${apiBase}/api/settings/model`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: model })
+                });
+                if (!resModel.ok) throw new Error('Model preference save failed');
+
+                UI.showSuccess('设置已保存');
+                modal.style.display = 'none';
+
+            } catch (e) {
+                UI.showError('保存失败: ' + e.message);
             }
         };
     }
 
     settingsBtn.addEventListener('click', async () => {
         modal.style.display = 'block';
-        // Check if key exists (don't show actual key for security, just placeholder)
+
         try {
             const apiBase = CONFIG.API_BASE_URL || '';
-            const res = await fetch(`${apiBase}/api/settings/apikey/check`);
-            const data = await res.json();
-            if (data.exists) {
+
+            // 1. Check Key Status
+            const resKey = await fetch(`${apiBase}/api/settings/apikey/check`);
+            const dataKey = await resKey.json();
+            if (dataKey.exists) {
                 const input = document.getElementById('apiKeyInput');
                 if (input) {
                     input.placeholder = "******** (已配置)";
-                    input.value = ""; // Clear for security
+                    input.value = "";
                 }
             }
-        } catch(e) {
-            console.error("Failed to check key status", e);
+
+            // 2. Load Current Model Setting
+            const resModel = await fetch(`${apiBase}/api/settings/model`);
+            const dataModel = await resModel.json();
+            if (dataModel.model) {
+                const select = document.getElementById('modelSelect');
+                if (select) select.value = dataModel.model;
+            }
+
+        } catch (e) {
+            console.error("Failed to load settings status", e);
         }
     });
 }

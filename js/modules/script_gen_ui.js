@@ -561,10 +561,7 @@ export class ScriptGeneratorManager {
             scriptProgress.update(3, '调用AI API...');
             // Call API
             const apiStartTime = Date.now();
-            const result = await API.callQwenAPI(prompt, this.referenceImageBase64, null, this.abortController.signal); // Pass image if exists
-
-            // Adjust based on actual API return structure
-            const content = result.choices ? result.choices[0].message.content : (result.output ? result.output.text : result);
+            const content = await API.callQwenAPI(prompt, this.referenceImageBase64, null, this.abortController.signal); // Pass image if exists
 
             this.generatedScript = content;
             this.lastParams = params; // Store params for metadata
@@ -711,12 +708,10 @@ export class ScriptGeneratorManager {
 
             refineProgress.update(2, '调用AI API...');
             const apiStartTime = Date.now();
-            const result = await API.callQwenAPI(prompt);
+            const content = await API.callQwenAPI(prompt);
             const apiDuration = Date.now() - apiStartTime;
 
             performanceMonitor.recordAPICall('script_refinement', apiDuration, true);
-
-            const content = result.choices ? result.choices[0].message.content : (result.output ? result.output.text : result);
 
             this.generatedScript = content;
             this.view.renderOutput(content);
@@ -789,12 +784,11 @@ export class ScriptGeneratorManager {
             analyzeProgress.update(2, '调用AI API...');
             const prompt = buildAnalyzePrompt(this.generatedScript);
             const apiStartTime = Date.now();
-            const result = await API.callQwenAPI(prompt);
+            // Force qwen-max for analysis for best results
+            const content = await API.callQwenAPI(prompt, null, null, null, "qwen-max");
             const apiDuration = Date.now() - apiStartTime;
 
             performanceMonitor.recordAPICall('script_analysis', apiDuration, true);
-
-            const content = result.choices ? result.choices[0].message.content : (result.output ? result.output.text : result);
 
             this.view.renderAnalysis(content);
             scriptCache.cacheAnalysis(this.generatedScript, content);
@@ -951,13 +945,12 @@ export class ScriptGeneratorManager {
             `;
 
             const extractStartTime = Date.now();
-            const extractRes = await API.callQwenAPI(extractPrompt);
+            const text = await API.callQwenAPI(extractPrompt);
             const extractDuration = Date.now() - extractStartTime;
             performanceMonitor.recordAPICall('extract_visual_descriptions', extractDuration, true);
 
             let prompts = [];
             try {
-                const text = extractRes.choices ? extractRes.choices[0].message.content : (extractRes.output ? extractRes.output.text : extractRes);
                 const jsonMatch = text.match(/\[[\s\S]*\]/);
                 const jsonStr = jsonMatch ? jsonMatch[0] : text.replace(/```json/g, '').replace(/```/g, '').trim();
                 prompts = JSON.parse(jsonStr);
@@ -1120,8 +1113,7 @@ visualStyle, pacing, viralHook, cta,
 brandName, brandSlogan, brandPoints.
 JSON output only.`;
 
-            const result = await API.callQwenAPI(prompt);
-            const content = result.choices ? result.choices[0].message.content : (result.output ? result.output.text : result);
+            const content = await API.callQwenAPI(prompt);
             const jsonMatch = content.match(/\{[\s\S]*\}/);
 
             if (jsonMatch) {

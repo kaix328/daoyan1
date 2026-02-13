@@ -1,11 +1,11 @@
 import { CONFIG } from './config.js';
 import { retryWithBackoff, shouldRetryAPIError } from './utils/retry_utils.js';
 
-export async function callQwenAPI(prompt, images = null, apiKey = null, signal = null) {
+export async function callQwenAPI(prompt, images = null, apiKey = null, signal = null, modelOverride = null) {
     // 使用重试机制包装API调用
     return retryWithBackoff(
         async () => {
-            return await callQwenAPIInternal(prompt, images, apiKey, signal);
+            return await callQwenAPIInternal(prompt, images, apiKey, signal, modelOverride);
         },
         3, // maxRetries
         1000, // baseDelay
@@ -13,7 +13,7 @@ export async function callQwenAPI(prompt, images = null, apiKey = null, signal =
     );
 }
 
-async function callQwenAPIInternal(prompt, images = null, apiKey = null, signal = null) {
+async function callQwenAPIInternal(prompt, images = null, apiKey = null, signal = null, modelOverride = null) {
     // 构建请求体
     let messages;
 
@@ -42,7 +42,7 @@ async function callQwenAPIInternal(prompt, images = null, apiKey = null, signal 
             });
         });
     } else {
-        // Text-only request (for qwen-plus)
+        // Text-only request
         messages = [
             {
                 role: "user",
@@ -51,8 +51,26 @@ async function callQwenAPIInternal(prompt, images = null, apiKey = null, signal 
         ];
     }
 
+    // Determine Model
+    let targetModel = modelOverride;
+    if (!targetModel) {
+        if (images) {
+            targetModel = "qwen-vl-max";
+        } else {
+            // Default text model from settings or fallback
+            try {
+                const apiBase = CONFIG.API_BASE_URL || '';
+                const res = await fetch(`${apiBase}/api/settings/model`);
+                const data = await res.json();
+                targetModel = data.model || "qwen-plus";
+            } catch (e) {
+                targetModel = "qwen-plus";
+            }
+        }
+    }
+
     const requestBody = {
-        model: images ? "qwen-vl-max" : "qwen-plus",
+        model: targetModel,
         messages: messages,
         max_tokens: 4000
     };
@@ -64,7 +82,7 @@ async function callQwenAPIInternal(prompt, images = null, apiKey = null, signal 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-        
+
         // Handle external abort signal
         const onAbort = () => controller.abort();
         if (signal) {
@@ -80,7 +98,7 @@ async function callQwenAPIInternal(prompt, images = null, apiKey = null, signal 
             const headers = {
                 'Content-Type': 'application/json'
             };
-            
+
             // Only add header if apiKey is explicitly provided (legacy or override)
             // Otherwise server.py will inject it from DB
             if (apiKey) {
@@ -101,10 +119,10 @@ async function callQwenAPIInternal(prompt, images = null, apiKey = null, signal 
                 let errorText = "";
                 try {
                     errorText = await response.text();
-                } catch(e) {} // ignore read error
+                } catch (e) { } // ignore read error
 
                 console.error(`API Error Response (Attempt ${attempt + 1}):`, errorText);
-                
+
                 // If it's a 5xx error, retry
                 if (response.status >= 500 && attempt < MAX_RETRIES) {
                     console.warn(`Server error ${response.status}, retrying...`);
@@ -146,7 +164,7 @@ async function callQwenAPIInternal(prompt, images = null, apiKey = null, signal 
         } catch (error) {
             clearTimeout(timeoutId);
             if (signal) signal.removeEventListener('abort', onAbort);
-            
+
             // Handle Network Errors specifically
             if (error.name === 'AbortError') {
                 if (signal && signal.aborted) {
@@ -158,7 +176,7 @@ async function callQwenAPIInternal(prompt, images = null, apiKey = null, signal 
                 }
                 throw new Error("请求超时，请检查网络连接");
             }
-            
+
             if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
                 if (attempt < MAX_RETRIES) {
                     console.warn(`Network error, retrying...`);

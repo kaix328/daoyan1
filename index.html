@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 导演助手 - 专业分镜分析 (Project First)</title>
     <!-- Add Favicon to fix 404 -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
     <link rel="stylesheet" href="style.css?v=lock_mode_5">
     <link rel="stylesheet" href="script_gen.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -79,7 +80,8 @@
                         <button class="btn btn-secondary btn-large" id="openScriptGenBtn">
                             <i class="fas fa-pen-nib"></i> 脚本生成器
                         </button>
-                        <button class="btn btn-secondary btn-large" onclick="window.location.href='91Writing/dist/index.html'">
+                        <button class="btn btn-secondary btn-large"
+                            onclick="window.location.href='91Writing/dist/index.html'">
                             <i class="fas fa-book"></i> 小说创作
                         </button>
                     </div>
@@ -108,30 +110,34 @@
                 <div class="tools-grid">
                     <!-- 左列: 上传与预览 -->
                     <div class="col-left">
-                        <section class="card input-station-card" style="height: 100%; display: flex; flex-direction: column;">
+                        <section class="card input-station-card"
+                            style="height: 100%; display: flex; flex-direction: column;">
                             <div class="card-header">
                                 <h2><i class="fas fa-layer-group"></i> 创作工作台</h2>
                             </div>
-                            
+
                             <div class="station-section" style="flex: 1; padding-bottom: 20px;">
                                 <h3 class="section-label"><i class="fas fa-image"></i> 分镜画面</h3>
                                 <!-- Hero Upload Area -->
                                 <div class="upload-area-hero" id="uploadArea">
-                                    <label for="imageInput" style="cursor: pointer; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                    <label for="imageInput"
+                                        style="cursor: pointer; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                                         <i class="fas fa-cloud-upload-alt upload-icon-large"></i>
                                         <div class="upload-text-main">点击或拖拽上传分镜图</div>
                                         <div class="upload-text-sub">支持 JPG, PNG, GIF (推荐多张连续画面)</div>
                                     </label>
                                     <input type="file" id="imageInput" accept=".jpg,.jpeg,.png,.gif,.bmp" multiple>
                                 </div>
-                                
+
                                 <!-- Image Preview Grid -->
                                 <div class="image-preview" id="imagePreview" style="display:none;">
                                     <div class="preview-actions" style="margin-bottom:10px; text-align:right;">
-                                        <button id="removeImage" class="btn btn-danger btn-small"><i class="fas fa-trash"></i> 清空</button>
+                                        <button id="removeImage" class="btn btn-danger btn-small"><i
+                                                class="fas fa-trash"></i> 清空</button>
                                     </div>
                                     <div class="preview-container">
-                                        <img id="previewImage" src="" alt="预览" style="display:none;"> <!-- Hidden placeholder for compat -->
+                                        <img id="previewImage" src="" alt="预览" style="display:none;">
+                                        <!-- Hidden placeholder for compat -->
                                         <!-- Dynamic images will be added here -->
                                     </div>
                                 </div>
@@ -150,7 +156,8 @@
                                         </select>
                                     </div>
                                     <div class="action-row">
-                                        <button id="analyzeBtn" class="btn btn-primary btn-block btn-lg-action" disabled>
+                                        <button id="analyzeBtn" class="btn btn-primary btn-block btn-lg-action"
+                                            disabled>
                                             <i class="fas fa-play"></i> 开始 AI 视觉分析
                                         </button>
                                     </div>
@@ -165,11 +172,12 @@
                             <div class="station-section" style="padding-top: 20px; padding-bottom: 20px;">
                                 <h3 class="section-label"><i class="fas fa-magic"></i> AI 生成工具</h3>
                                 <!-- Tabs for Tools -->
-                                <div class="tabs" style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <div class="tabs"
+                                    style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
                                     <button class="tab-btn active" data-tab="video" style="flex:1;">视频提示词</button>
                                     <button class="tab-btn" data-tab="music" style="flex:1;">音效配乐</button>
                                 </div>
-                                
+
                                 <!-- Video Prompt Config -->
                                 <div class="tab-content active" id="tab-video">
                                     <div class="form-group">
@@ -204,31 +212,44 @@
 
                     <!-- 右列: 结果与工具 -->
                     <div class="col-right">
-                        <section class="card result-card" id="resultCard" style="min-height: 0; flex: 1; display: flex; flex-direction: column;">
-                            <div class="card-header" style="flex-direction: column; align-items: stretch; gap: 10px; padding-bottom: 0; border-bottom: none;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <section class="card result-card" id="resultCard"
+                            style="min-height: 0; flex: 1; display: flex; flex-direction: column;">
+                            <div class="card-header"
+                                style="flex-direction: column; align-items: stretch; gap: 10px; padding-bottom: 0; border-bottom: none;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                     <h2><i class="fas fa-poll-h"></i> 智能分析结果</h2>
                                     <div class="header-actions">
-                                        <span id="resultStatus" class="status-badge" style="background:#333; color:#aaa; padding:2px 8px; border-radius:4px; font-size:0.8rem;">Waiting</span>
-                                        <button id="copyResultBtn" class="btn btn-secondary btn-small" title="复制当前内容"><i class="fas fa-copy"></i></button>
-                                        <button id="saveResult" class="btn btn-secondary btn-small" title="保存为文本"><i class="fas fa-save"></i></button>
-                                        <button id="exportPdfBtn" class="btn btn-secondary btn-small" title="导出 PDF"><i class="fas fa-file-pdf"></i></button>
+                                        <span id="resultStatus" class="status-badge"
+                                            style="background:#333; color:#aaa; padding:2px 8px; border-radius:4px; font-size:0.8rem;">Waiting</span>
+                                        <button id="copyResultBtn" class="btn btn-secondary btn-small" title="复制当前内容"><i
+                                                class="fas fa-copy"></i></button>
+                                        <button id="saveResult" class="btn btn-secondary btn-small" title="保存为文本"><i
+                                                class="fas fa-save"></i></button>
+                                        <button id="exportPdfBtn" class="btn btn-secondary btn-small" title="导出 PDF"><i
+                                                class="fas fa-file-pdf"></i></button>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Result Tabs -->
-                                <div class="tabs result-tabs" style="margin-bottom: 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                    <button class="tab-btn result-tab-btn active" data-target="tab-report">📊 分析报告</button>
-                                    <button class="tab-btn result-tab-btn" data-target="tab-video-result">🎬 视频提示词</button>
-                                    <button class="tab-btn result-tab-btn" data-target="tab-music-result">🎵 音效提示词</button>
+                                <div class="tabs result-tabs"
+                                    style="margin-bottom: 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    <button class="tab-btn result-tab-btn active" data-target="tab-report">📊
+                                        分析报告</button>
+                                    <button class="tab-btn result-tab-btn" data-target="tab-video-result">🎬
+                                        视频提示词</button>
+                                    <button class="tab-btn result-tab-btn" data-target="tab-music-result">🎵
+                                        音效提示词</button>
                                 </div>
                             </div>
-                            
+
                             <!-- Content Wrapper: Needs to be flex column to handle scrolling content properly -->
-                            <div class="result-content-wrapper" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
-                                
+                            <div class="result-content-wrapper"
+                                style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+
                                 <!-- Tab 1: Report (Scrollable) -->
-                                <div id="tab-report" class="result-tab-content active" style="flex: 1; overflow-y: auto; padding: 15px;">
+                                <div id="tab-report" class="result-tab-content active"
+                                    style="flex: 1; overflow-y: auto; padding: 15px;">
                                     <div id="analysisResult" class="result-content markdown-body">
                                         <!-- Empty State Hero -->
                                         <div class="empty-result-hero">
@@ -241,9 +262,10 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- 视觉辅助工具 (Lighting/Focal) Container -->
-                                    <div id="visualTools" class="visual-tools-container" style="display:none; margin-top:20px;">
+                                    <div id="visualTools" class="visual-tools-container"
+                                        style="display:none; margin-top:20px;">
                                         <div class="visual-tool-block">
                                             <h3><i class="fas fa-lightbulb"></i> AI 布光图</h3>
                                             <canvas id="lightingDiagram" width="300" height="200"></canvas>
@@ -252,24 +274,28 @@
                                 </div>
 
                                 <!-- Tab 2: Video Prompt (Scrollable) -->
-                                <div id="tab-video-result" class="result-tab-content" style="display: none; flex: 1; overflow-y: auto; padding: 15px;">
+                                <div id="tab-video-result" class="result-tab-content"
+                                    style="display: none; flex: 1; overflow-y: auto; padding: 15px;">
                                     <div id="videoPromptResult" class="tool-result" style="display:none;">
                                         <div id="promptContent"></div>
                                         <!-- copy button is handled inside displayVideoPrompt -->
                                     </div>
                                     <div id="videoPromptEmpty" class="empty-state-small">
-                                        <i class="fas fa-video" style="font-size:2rem; margin-bottom:10px; opacity:0.3;"></i>
+                                        <i class="fas fa-video"
+                                            style="font-size:2rem; margin-bottom:10px; opacity:0.3;"></i>
                                         <p>暂无生成结果，请在左侧点击“生成提示词”</p>
                                     </div>
                                 </div>
 
                                 <!-- Tab 3: Music Prompt (Scrollable) -->
-                                <div id="tab-music-result" class="result-tab-content" style="display: none; flex: 1; overflow-y: auto; padding: 15px;">
+                                <div id="tab-music-result" class="result-tab-content"
+                                    style="display: none; flex: 1; overflow-y: auto; padding: 15px;">
                                     <div id="musicResult" class="tool-result" style="display:none;">
                                         <div id="musicContent"></div>
                                     </div>
                                     <div id="musicPromptEmpty" class="empty-state-small">
-                                        <i class="fas fa-music" style="font-size:2rem; margin-bottom:10px; opacity:0.3;"></i>
+                                        <i class="fas fa-music"
+                                            style="font-size:2rem; margin-bottom:10px; opacity:0.3;"></i>
                                         <p>暂无生成结果，请在左侧点击“分析配乐需求”</p>
                                     </div>
                                 </div>
@@ -282,8 +308,10 @@
             <!-- 独立工具工作区 (Tools Workspace) -->
             <div id="toolsWorkspace" style="display: none; padding: 20px;">
                 <div class="container" style="width: 100%; max-width: none;">
-                    <div class="tools-header" style="display: flex; align-items: center; margin-bottom: 20px; gap: 20px;">
-                        <button id="closeToolsBtn" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> 返回</button>
+                    <div class="tools-header"
+                        style="display: flex; align-items: center; margin-bottom: 20px; gap: 20px;">
+                        <button id="closeToolsBtn" class="btn btn-secondary"><i class="fas fa-arrow-left"></i>
+                            返回</button>
                         <h2 id="toolsTitle"><i class="fas fa-palette"></i> 调色与绘画实验室</h2>
                     </div>
                     <div id="toolsContent" class="card" style="padding: 20px;">
@@ -295,8 +323,10 @@
             <!-- 脚本生成工作区 (Script Workspace) -->
             <div id="scriptWorkspace" style="display: none; padding: 20px;">
                 <div class="container" style="width: 100%; max-width: none;">
-                    <div class="tools-header" style="display: flex; align-items: center; margin-bottom: 20px; gap: 20px;">
-                        <button id="closeScriptBtn" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> 返回</button>
+                    <div class="tools-header"
+                        style="display: flex; align-items: center; margin-bottom: 20px; gap: 20px;">
+                        <button id="closeScriptBtn" class="btn btn-secondary"><i class="fas fa-arrow-left"></i>
+                            返回</button>
                         <h2><i class="fas fa-pen-nib"></i> 智能脚本创作中心</h2>
                     </div>
                     <div id="scriptContent" class="card" style="padding: 20px;">
@@ -334,7 +364,18 @@
                     </div>
                     <p class="hint-text">密钥将仅存储在您的本地浏览器中。</p>
                 </div>
-                <button id="saveSettingsBtn" class="btn btn-primary btn-block">保存设置</button>
+
+                <div class="form-group" style="margin-top: 15px;">
+                    <label for="modelSelect"><i class="fas fa-microchip"></i> 默认对话模型:</label>
+                    <select id="modelSelect" class="stylish-select"
+                        style="width: 100%; margin-top: 5px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; padding: 8px;">
+                        <option value="qwen-plus">Qwen Plus (平衡型/低消耗)</option>
+                        <option value="qwen-max">Qwen Max (最强力/高精度)</option>
+                    </select>
+                    <p class="hint-text">建议脚本分析使用 Max 模型以获得更佳效果。</p>
+                </div>
+
+                <button id="saveSettingsBtn" class="btn btn-primary btn-block" style="margin-top: 20px;">保存设置</button>
             </div>
 
             <div class="settings-section">
@@ -363,7 +404,8 @@
             <span class="close">&times;</span>
             <h2 id="inputModalTitle">请输入</h2>
             <div class="form-group">
-                <input type="text" id="inputModalValue" class="full-width-input" placeholder="请输入内容..." style="width: 100%; margin: 15px 0;">
+                <input type="text" id="inputModalValue" class="full-width-input" placeholder="请输入内容..."
+                    style="width: 100%; margin: 15px 0;">
             </div>
             <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
                 <button id="inputModalCancelBtn" class="btn btn-secondary btn-small">取消</button>
