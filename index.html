@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 导演助手 - 专业分镜分析 (Project First)</title>
+    <!-- Add Favicon to fix 404 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
+    <link rel="stylesheet" href="style.css?v=lock_mode_5">
+    <link rel="stylesheet" href="script_gen.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- 左侧侧边栏: 项目与历史 -->
+        <aside class="sidebar hidden" id="appSidebar">
+            <div class="sidebar-header">
+                <div class="logo-row">
+                    <div class="logo-small" id="homeBtn" style="cursor: pointer;" title="回到首页">
+                        <i class="fas fa-film"></i> <span class="sidebar-text">AI Director</span>
+                    </div>
+                    <button id="sidebarToggleBtn" class="icon-btn" title="折叠/展开"><i class="fas fa-bars"></i></button>
+                </div>
+                <button id="newProjectBtn" class="btn btn-primary btn-block">
+                    <i class="fas fa-plus"></i> <span class="sidebar-text">新建项目</span>
+                </button>
+            </div>
+
+            <div class="sidebar-search">
+                <select id="projectFilter">
+                    <option value="">所有项目</option>
+                </select>
+            </div>
+
+            <div class="sidebar-content" id="historyList">
+                <!-- 历史记录列表 -->
+            </div>
+
+            <div class="sidebar-footer">
+                <button id="exportProjectBtn" class="icon-btn" title="导出数据"><i class="fas fa-file-export"></i></button>
+                <button id="refreshHistoryKey" class="icon-btn" title="刷新列表"><i class="fas fa-sync"></i></button>
+                <button id="clearHistoryBtn" class="icon-btn" title="清空历史"><i class="fas fa-trash-alt"></i></button>
+                <div class="spacer"></div>
+                <!-- Settings moved to top right -->
+                <div class="version-tag sidebar-text">v2.1</div>
+            </div>
+        </aside>
+
+        <!-- 右侧主内容区 -->
+        <main class="main-content">
+            <!-- 全局右上角设置按钮 -->
+            <div class="global-top-right">
+                <button id="globalSettingsBtn" class="icon-btn-large" title="系统设置">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+
+            <!-- 欢迎/空状态屏幕 -->
+            <div id="welcomeScreen" class="welcome-screen">
+                <div class="hero-content">
+                    <h1><i class="fas fa-film"></i> AI 导演助手</h1>
+                    <p class="subtitle">专业的影视分镜分析与创意生成工具</p>
+                    <div class="hero-actions">
+                        <button class="btn btn-primary btn-large"
+                            onclick="document.getElementById('newProjectBtn').click()">
+                            <i class="fas fa-plus-circle"></i> 图片分析器
+                        </button>
+                        <button class="btn btn-secondary btn-large" id="openColorGradingBtn">
+                            <i class="fas fa-palette"></i> 调色/绘画工具
+                        </button>
+                        <button class="btn btn-secondary btn-large" id="openScriptGenBtn">
+                            <i class="fas fa-pen-nib"></i> 脚本生成器
+                        </button>
+                        <button class="btn btn-secondary btn-large" onclick="window.location.href='/91Writing/dist/index.html'">
+                            <i class="fas fa-book"></i> 小说创作
+                        </button>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <!-- 工作区 (项目激活后显示) -->
+            <div id="workspaceArea">
+                <!-- 项目设置头 -->
+                <section class="card project-header-card" id="projectSettingsCard">
+                    <div class="project-title-row">
+                        <div class="input-group">
+                            <label><i class="fas fa-folder-open"></i> 项目:</label>
+                            <input type="text" id="projectName" placeholder="项目名称">
+                            <button id="renameProjectBtn" class="btn btn-secondary btn-small"><i
+                                    class="fas fa-edit"></i></button>
+                        </div>
+                    </div>
+                    <div class="project-context-row">
+                        <textarea id="projectContext" rows="1" placeholder="项目背景与一致性约束..."></textarea>
+                    </div>
+                </section>
+
+                <div class="tools-grid">
+                    <!-- 左列: 上传与预览 -->
+                    <div class="col-left">
+                        <section class="card input-station-card" style="height: 100%; display: flex; flex-direction: column;">
+                            <div class="card-header">
+                                <h2><i class="fas fa-layer-group"></i> 创作工作台</h2>
+                            </div>
+                            
+                            <div class="station-section" style="flex: 1; padding-bottom: 20px;">
+                                <h3 class="section-label"><i class="fas fa-image"></i> 分镜画面</h3>
+                                <!-- Hero Upload Area -->
+                                <div class="upload-area-hero" id="uploadArea">
+                                    <label for="imageInput" style="cursor: pointer; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                        <i class="fas fa-cloud-upload-alt upload-icon-large"></i>
+                                        <div class="upload-text-main">点击或拖拽上传分镜图</div>
+                                        <div class="upload-text-sub">支持 JPG, PNG, GIF (推荐多张连续画面)</div>
+                                    </label>
+                                    <input type="file" id="imageInput" accept=".jpg,.jpeg,.png,.gif,.bmp" multiple>
+                                </div>
+                                
+                                <!-- Image Preview Grid -->
+                                <div class="image-preview" id="imagePreview" style="display:none;">
+                                    <div class="preview-actions" style="margin-bottom:10px; text-align:right;">
+                                        <button id="removeImage" class="btn btn-danger btn-small"><i class="fas fa-trash"></i> 清空</button>
+                                    </div>
+                                    <div class="preview-container">
+                                        <img id="previewImage" src="" alt="预览" style="display:none;"> <!-- Hidden placeholder for compat -->
+                                        <!-- Dynamic images will be added here -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="station-divider"></div>
+
+                            <div class="station-section" style="padding-top: 20px;">
+                                <h3 class="section-label"><i class="fas fa-sliders-h"></i> 分析配置</h3>
+                                <div class="analysis-config-section" style="border:none; padding-top:0; margin-top:0;">
+                                    <div class="form-group">
+                                        <select id="analysisType" class="stylish-select">
+                                            <option value="standard">🎬 标准导演分析 (构图/光影/运镜)</option>
+                                            <option value="detailed">🔍 深度逐帧解读 (包含情感/符号学)</option>
+                                            <option value="quick">⚡ 快速剧情概览</option>
+                                        </select>
+                                    </div>
+                                    <div class="action-row">
+                                        <button id="analyzeBtn" class="btn btn-primary btn-block btn-lg-action" disabled>
+                                            <i class="fas fa-play"></i> 开始 AI 视觉分析
+                                        </button>
+                                    </div>
+                                    <div class="progress-container" id="progressContainer">
+                                        <div class="progress-bar" id="progressBar"></div>
+                                        <div class="progress-text" id="progressText">正在深入分析画面细节...</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="station-divider"></div>
+
+                            <div class="station-section" style="padding-top: 20px; padding-bottom: 20px;">
+                                <h3 class="section-label"><i class="fas fa-magic"></i> AI 生成工具</h3>
+                                <!-- Tabs for Tools -->
+                                <div class="tabs" style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    <button class="tab-btn active" data-tab="video" style="flex:1;">视频提示词</button>
+                                    <button class="tab-btn" data-tab="music" style="flex:1;">音效配乐</button>
+                                </div>
+                                
+                                <!-- Video Prompt Config -->
+                                <div class="tab-content active" id="tab-video">
+                                    <div class="form-group">
+                                        <select id="promptStyle" class="stylish-select">
+                                            <option value="cinematic">🎬 电影感 (Cinematic)</option>
+                                            <option value="anime">🎨 动漫 (Anime)</option>
+                                            <option value="3d">🧊 3D渲染 (Unreal Engine)</option>
+                                            <option value="cyberpunk">🌃 赛博朋克 (Cyberpunk)</option>
+                                        </select>
+                                    </div>
+                                    <button id="generatePromptBtn" class="btn btn-secondary btn-block">
+                                        <i class="fas fa-pen-fancy"></i> 生成提示词
+                                    </button>
+                                </div>
+
+                                <!-- Music Config -->
+                                <div class="tab-content" id="tab-music" style="display:none;">
+                                    <div class="form-group">
+                                        <select id="musicStyle" class="stylish-select">
+                                            <option value="auto">🎵 智能推荐 (Auto)</option>
+                                            <option value="cinematic">🎻 电影原声 (OST)</option>
+                                            <option value="ambient">🌫️ 氛围音乐 (Ambient)</option>
+                                        </select>
+                                    </div>
+                                    <button id="analyzeMusicBtn" class="btn btn-secondary btn-block">
+                                        <i class="fas fa-music"></i> 分析配乐需求
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- 右列: 结果与工具 -->
+                    <div class="col-right">
+                        <section class="card result-card" id="resultCard" style="min-height: 0; flex: 1; display: flex; flex-direction: column;">
+                            <div class="card-header" style="flex-direction: column; align-items: stretch; gap: 10px; padding-bottom: 0; border-bottom: none;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <h2><i class="fas fa-poll-h"></i> 智能分析结果</h2>
+                                    <div class="header-actions">
+                                        <span id="resultStatus" class="status-badge" style="background:#333; color:#aaa; padding:2px 8px; border-radius:4px; font-size:0.8rem;">Waiting</span>
+                                        <button id="copyResultBtn" class="btn btn-secondary btn-small" title="复制当前内容"><i class="fas fa-copy"></i></button>
+                                        <button id="saveResult" class="btn btn-secondary btn-small" title="保存为文本"><i class="fas fa-save"></i></button>
+                                        <button id="exportPdfBtn" class="btn btn-secondary btn-small" title="导出 PDF"><i class="fas fa-file-pdf"></i></button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Result Tabs -->
+                                <div class="tabs result-tabs" style="margin-bottom: 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    <button class="tab-btn result-tab-btn active" data-target="tab-report">📊 分析报告</button>
+                                    <button class="tab-btn result-tab-btn" data-target="tab-video-result">🎬 视频提示词</button>
+                                    <button class="tab-btn result-tab-btn" data-target="tab-music-result">🎵 音效提示词</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Content Wrapper: Needs to be flex column to handle scrolling content properly -->
+                            <div class="result-content-wrapper" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                                
+                                <!-- Tab 1: Report (Scrollable) -->
+                                <div id="tab-report" class="result-tab-content active" style="flex: 1; overflow-y: auto; padding: 15px;">
+                                    <div id="analysisResult" class="result-content markdown-body">
+                                        <!-- Empty State Hero -->
+                                        <div class="empty-result-hero">
+                                            <div class="empty-result-icon">
+                                                <i class="fas fa-film"></i>
+                                            </div>
+                                            <div class="empty-result-text">
+                                                <h3>等待分析结果</h3>
+                                                <p>请在左侧上传分镜图并点击“开始分析”</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 视觉辅助工具 (Lighting/Focal) Container -->
+                                    <div id="visualTools" class="visual-tools-container" style="display:none; margin-top:20px;">
+                                        <div class="visual-tool-block">
+                                            <h3><i class="fas fa-lightbulb"></i> AI 布光图</h3>
+                                            <canvas id="lightingDiagram" width="300" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tab 2: Video Prompt (Scrollable) -->
+                                <div id="tab-video-result" class="result-tab-content" style="display: none; flex: 1; overflow-y: auto; padding: 15px;">
+                                    <div id="videoPromptResult" class="tool-result" style="display:none;">
+                                        <div id="promptContent"></div>
+                                        <!-- copy button is handled inside displayVideoPrompt -->
+                                    </div>
+                                    <div id="videoPromptEmpty" class="empty-state-small">
+                                        <i class="fas fa-video" style="font-size:2rem; margin-bottom:10px; opacity:0.3;"></i>
+                                        <p>暂无生成结果，请在左侧点击“生成提示词”</p>
+                                    </div>
+                                </div>
+
+                                <!-- Tab 3: Music Prompt (Scrollable) -->
+                                <div id="tab-music-result" class="result-tab-content" style="display: none; flex: 1; overflow-y: auto; padding: 15px;">
+                                    <div id="musicResult" class="tool-result" style="display:none;">
+                                        <div id="musicContent"></div>
+                                    </div>
+                                    <div id="musicPromptEmpty" class="empty-state-small">
+                                        <i class="fas fa-music" style="font-size:2rem; margin-bottom:10px; opacity:0.3;"></i>
+                                        <p>暂无生成结果，请在左侧点击“分析配乐需求”</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 独立工具工作区 (Tools Workspace) -->
+            <div id="toolsWorkspace" style="display: none; padding: 20px;">
+                <div class="container" style="width: 100%; max-width: none;">
+                    <div class="tools-header" style="display: flex; align-items: center; margin-bottom: 20px; gap: 20px;">
+                        <button id="closeToolsBtn" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> 返回</button>
+                        <h2 id="toolsTitle"><i class="fas fa-palette"></i> 调色与绘画实验室</h2>
+                    </div>
+                    <div id="toolsContent" class="card" style="padding: 20px;">
+                        <!-- Color Grading UI will be injected here by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 脚本生成工作区 (Script Workspace) -->
+            <div id="scriptWorkspace" style="display: none; padding: 20px;">
+                <div class="container" style="width: 100%; max-width: none;">
+                    <div class="tools-header" style="display: flex; align-items: center; margin-bottom: 20px; gap: 20px;">
+                        <button id="closeScriptBtn" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> 返回</button>
+                        <h2><i class="fas fa-pen-nib"></i> 智能脚本创作中心</h2>
+                    </div>
+                    <div id="scriptContent" class="card" style="padding: 20px;">
+                        <!-- Script Gen UI will be injected here by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage">
+        <div id="caption"></div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content settings-modal-content">
+            <span class="close">&times;</span>
+            <h2><i class="fas fa-cog"></i> 系统设置</h2>
+
+            <div class="settings-section">
+                <h3><i class="fas fa-key"></i> API 配置</h3>
+                <div class="form-group">
+                    <label for="apiKeyInput">通义千问 API 密钥:</label>
+                    <div class="input-with-icon">
+                        <input type="password" id="apiKeyInput" placeholder="sk-..."
+                            style="width: 100%; padding-right: 40px;">
+                        <button id="toggleKeyBtn" class="icon-btn-inline"
+                            style="position:absolute; right:10px; top:50%; transform:translateY(-50%); border:none; background:none; color:#888; cursor:pointer;">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <p class="hint-text">密钥将仅存储在您的本地浏览器中。</p>
+                </div>
+                <button id="saveSettingsBtn" class="btn btn-primary btn-block">保存设置</button>
+            </div>
+
+            <div class="settings-section">
+                <h3><i class="fas fa-info-circle"></i> 关于</h3>
+                <p>专业分镜分析助手 v2.1</p>
+                <div class="footer-links-modal">
+                    <a href="#" id="helpBtnLink">帮助文档</a> |
+                    <a href="https://dashscope.aliyun.com/" target="_blank">阿里云百炼</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- 隐藏的 示例结果模板 (保留用于 JS 调用) -->
+    <div id="sampleResult" style="display: none;">
+        <!-- (Content preserved conceptually, but simplified here to save space as it's just a template) -->
+        <h3>示例分析结果</h3>
+        <p>这是示例数据的占位符...</p>
+    </div>
+
+    <!-- 通用输入模态框 (替代 prompt) -->
+    <div id="inputModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close">&times;</span>
+            <h2 id="inputModalTitle">请输入</h2>
+            <div class="form-group">
+                <input type="text" id="inputModalValue" class="full-width-input" placeholder="请输入内容..." style="width: 100%; margin: 15px 0;">
+            </div>
+            <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button id="inputModalCancelBtn" class="btn btn-secondary btn-small">取消</button>
+                <button id="inputModalConfirmBtn" class="btn btn-primary btn-small">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通用消息模态框 (Alert/Confirm) -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close">&times;</span>
+            <h2 id="messageModalTitle">提示</h2>
+            <div class="modal-body" style="margin: 20px 0; font-size: 1.1em; color: #ddd;">
+                <p id="messageModalText"></p>
+            </div>
+            <div class="modal-actions" style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button id="messageModalCancelBtn" class="btn btn-secondary btn-small" style="display:none;">取消</button>
+                <button id="messageModalConfirmBtn" class="btn btn-primary btn-small">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js?v=lock_mode_27"></script>
+</body>
+
+</html>

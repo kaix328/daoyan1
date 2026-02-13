@@ -1,0 +1,14 @@
+{
+  "openai": {
+    "apiKey": "",
+    "baseURL": "",
+    "models": [],
+    "defaultModel": "",
+    "maxTokens": null,
+    "temperature": 0.7
+  },
+  "proxy": {
+    "enabled": false,
+    "url": ""
+  }
+}

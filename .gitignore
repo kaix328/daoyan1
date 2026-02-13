@@ -1,0 +1,66 @@
+# AI Director Assistant
+
+# 忽略环境配置文件（保留 .env.example 作为模板）
+.env
+!.env.example
+
+# 忽略Python缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 忽略虚拟环境
+venv/
+env/
+ENV/
+
+# 忽略IDE配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 忽略日志文件
+*.log
+logs/
+debug.log
+
+# 忽略数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# 忽略构建文件
+build/
+*.spec
+
+# 忽略上传文件
+uploads/
+temp/
+
+# 忽略操作系统文件
+.DS_Store
+Thumbs.db
+
+# 忽略测试覆盖率
+.coverage
+htmlcov/
+.pytest_cache/
+
+# 忽略包管理文件
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Node.js
+node_modules/
+.history/
+
+# 保留 91Writing 的 dist 构建产物（部署需要）
+# 但忽略根目录的 dist
+/dist/
+
+# prompt.txt (可能含敏感信息)
+prompt.txt

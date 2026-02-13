@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>91写作 - AI智能小说创作平台</title>
+    <link rel="icon" href="/favicon.svg" type="image/x-icon">
+    <!-- 关键字和描述 -->
+    <meta name="keywords" content="91写作,AI智能小说创作平台,AI小说创作工具,AI小说创作助手,AI小说创作软件,AI小说创作工具,AI小说创作助手,AI小说创作软件">
+    <meta name="description" content="专业的AI小说创作平台，集成多种先进AI模型，提供从构思到成文的完整创作工具链，让每个人都能轻松创作精彩小说。">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
+<script>LA.init({id:"Kr2l2KxS0qA2xqvC",ck:"Kr2l2KxS0qA2xqvC"})</script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --secondary: #64748b;
+            --accent: #0ea5e9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-light: #94a3b8;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-light);
+            transition: all 0.2s ease;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-api {
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            background: var(--bg-primary);
+        }
+
+        .nav-api:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-github {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid #24292e;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            background: #24292e;
+        }
+
+        .nav-github:hover {
+            background: #2c3e50;
+            border-color: #2c3e50;
+            color: white;
+        }
+
+        .nav-github svg {
+            flex-shrink: 0;
+            color: white;
+        }
+
+        .nav-github .github-stars {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
+        }
+
+        .nav-cta {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.75rem;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: background 0.2s ease;
+        }
+
+        .nav-cta:hover {
+            background: var(--primary-light);
+        }
+
+        /* 英雄区域 */
+        .hero {
+            padding: 120px 0 20px;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            line-height: 1.1;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+        }
+
+        .btn-github {
+            background: #24292e;
+            color: white;
+            position: relative;
+        }
+
+        .btn-github:hover {
+            background: #2c3e50;
+        }
+
+        .btn-github svg {
+            flex-shrink: 0;
+        }
+
+        .github-stars {
+            font-size: 0.875rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            margin-left: 0.5rem;
+            white-space: nowrap;
+        }
+
+        /* 功能特色 */
+        .features {
+            padding: 80px 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.2s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            color: var(--text-secondary);
+            padding: 0.25rem 0;
+            position: relative;
+            padding-left: 1.25rem;
+            font-size: 0.95rem;
+        }
+
+        .feature-list li::before {
+            content: '•';
+            color: var(--primary);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        /* 新功能模块 */
+        .new-features {
+            padding: 80px 0;
+            background: var(--bg-secondary);
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .module-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .module-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .new-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* 使用场景 */
+        .scenarios {
+            padding: 80px 0;
+        }
+
+        .scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .scenario-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.2s ease;
+        }
+
+        .scenario-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .scenario-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .scenario-steps {
+            list-style: none;
+        }
+
+        .scenario-steps li {
+            color: var(--text-secondary);
+            padding: 0.5rem 0;
+            font-size: 0.95rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .scenario-steps li:last-child {
+            border-bottom: none;
+        }
+
+        /* 统计数据 */
+        .stats {
+            padding: 60px 0;
+            background: var(--bg-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat-item {
+            padding: 1.5rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        /* CTA区域 */
+        .cta {
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .cta-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .cta-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+        }
+
+        /* 页脚 */
+        .footer {
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border);
+            padding: 3rem 0 2rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            transition: color 0.2s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+            padding-top: 2rem;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .nav-buttons {
+                gap: 0.5rem;
+            }
+
+            .nav-api {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.8rem;
+            }
+
+            .nav-github {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.8rem;
+            }
+
+            .nav-github:hover {
+                background: #2c3e50;
+                color: white;
+            }
+
+            .nav-github .github-stars {
+                display: none;
+            }
+
+            .nav-cta {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            /* 客服组件移动端适配 */
+            .customer-service {
+                right: 15px;
+                bottom: 15px;
+            }
+
+            .cs-toggle {
+                width: 50px;
+                height: 50px;
+            }
+
+            .cs-panel {
+                width: 260px;
+                bottom: 70px;
+            }
+
+            .hero {
+                padding: 100px 0 60px;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 280px;
+                justify-content: center;
+            }
+
+            .features,
+            .new-features,
+            .scenarios,
+            .cta {
+                padding: 60px 0;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .features-grid,
+            .modules-grid,
+            .scenarios-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* 选择文本颜色 */
+        ::selection {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary);
+        }
+
+        /* 简洁的滚动条 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-light);
+        }
+
+        /* 客服组件样式 */
+        .customer-service {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 1000;
+        }
+
+        .cs-toggle {
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .cs-toggle:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -5px rgba(37, 99, 235, 0.4);
+        }
+
+        .cs-panel {
+            position: absolute;
+            right: 0;
+            bottom: 80px;
+            width: 280px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .cs-panel.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .cs-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cs-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .cs-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .cs-close:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .cs-content {
+            padding: 8px 0;
+        }
+
+        .cs-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: background 0.2s ease;
+            border: none;
+            background: none;
+            width: 100%;
+        }
+
+        .cs-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .cs-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .cs-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .cs-title {
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .cs-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* QQ群二维码弹窗样式 */
+        .qr-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .qr-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .qr-content {
+            background: white;
+            border-radius: 12px;
+            padding: 0;
+            max-width: 300px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .qr-modal.show .qr-content {
+            transform: scale(1);
+        }
+
+        .qr-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .qr-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .qr-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .qr-close:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .qr-body {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .qr-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .qr-body p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">📚91写作</a>
+            <ul class="nav-links">
+                <li><a href="#features">核心功能</a></li>
+                <li><a href="#modules">新功能</a></li>
+                <li><a href="#scenarios">使用场景</a></li>
+                <li><a href="#stats">平台数据</a></li>
+            </ul>
+            <div class="nav-buttons">
+                <a href="https://item.taobao.com/item.htm?ft=t&id=938261705242" target="_blank" class="nav-api">API购买</a>
+                <a href="https://github.com/ponysb/91Writing" class="nav-github" target="_blank">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.30.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    开源
+                    <span class="github-stars">⭐ 获取中...</span>
+                </a>
+                <!-- <a href="https://xiezuo.91hub.vip" class="nav-cta">立即体验</a> -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-badge">🚀 v0.3.0 重大更新</div>
+            <h1 class="hero-title">AI智能小说创作工具</h1>
+            <p class="hero-subtitle">
+                专业的AI小说创作平台，集成多种先进AI模型，
+                提供从构思到成文的完整创作工具链，让每个人都能轻松创作精彩小说。
+            </p>
+            <div class="hero-buttons">
+                <a href="https://xiezuo.91hub.vip/index.html" class="btn btn-primary">
+                    开始创作
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 核心功能 -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">核心功能</h2>
+                <p class="section-subtitle">专业的AI创作工具，助力每一位创作者实现文学梦想</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3 class="feature-title">智能创作引擎</h3>
+                    <p class="feature-description">支持GPT、Claude、Gemini等主流AI模型，提供上下文感知的智能续写和多样化的创作算法。</p>
+                    <ul class="feature-list">
+                        <li>多AI模型智能切换</li>
+                        <li>上下文感知续写</li>
+                        <li>风格一致性保证</li>
+                        <li>多样化创作算法</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3 class="feature-title">完整创作工具链</h3>
+                    <p class="feature-description">从构思到成文的全流程支持，专业写作编辑器，智能大纲生成与章节管理。</p>
+                    <ul class="feature-list">
+                        <li>专业写作编辑器</li>
+                        <li>智能大纲生成</li>
+                        <li>章节管理系统</li>
+                        <li>实时写作统计</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <h3 class="feature-title">世界观构建</h3>
+                    <p class="feature-description">复杂世界观模板化管理，支持科幻修仙等特殊题材的专业设定生成和一致性检查。</p>
+                    <ul class="feature-list">
+                        <li>模板化世界观管理</li>
+                        <li>AI辅助设定生成</li>
+                        <li>一致性检查验证</li>
+                        <li>格式化输出模板</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">作品管理</h3>
+                    <p class="feature-description">安全可靠的作品存储，灵活的导入导出功能，完整的备份恢复机制，确保创作成果永不丢失。</p>
+                    <ul class="feature-list">
+                        <li>安全作品存储</li>
+                        <li>分类导入导出</li>
+                        <li>创作数据统计</li>
+                        <li>智能备份恢复</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h3 class="feature-title">智能提示词库</h3>
+                    <p class="feature-description">精心整理的专业创作模板，支持个性化定制和使用统计，大幅提升创作效率。</p>
+                    <ul class="feature-list">
+                        <li>分类模板管理</li>
+                        <li>个性化定制</li>
+                        <li>使用统计分析</li>
+                        <li>模板导入导出</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3 class="feature-title">写作目标</h3>
+                    <p class="feature-description">设定每日/每周/每月写作目标，实时进度跟踪，培养持续创作习惯。</p>
+                    <ul class="feature-list">
+                        <li>目标设定管理</li>
+                        <li>进度实时跟踪</li>
+                        <li>连续记录统计</li>
+                        <li>成就激励系统</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 新功能模块 -->
+    <section class="new-features" id="modules">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">v0.3.0 三大核心模块</h2>
+                <p class="section-subtitle">全新升级，为创作者提供更强大的AI辅助工具</p>
+            </div>
+            <div class="modules-grid">
+                <div class="module-card">
+                    <span class="new-badge">NEW</span>
+                    <div class="feature-icon">📖</div>
+                    <h3 class="feature-title">短篇小说创作</h3>
+                    <p class="feature-description">一站式短篇创作平台，提供专业模板系统和智能变量填充功能。</p>
+                    <ul class="feature-list">
+                        <li>6大专业模板（都市、玄幻、言情等）</li>
+                        <li>智能提示词选择器</li>
+                        <li>变量自动填充系统</li>
+                        <li>专业写作编辑器</li>
+                        <li>题材配置管理</li>
+                    </ul>
+                </div>
+
+                <div class="module-card">
+                    <span class="new-badge">NEW</span>
+                    <div class="feature-icon">🔧</div>
+                    <h3 class="feature-title">智能工具库</h3>
+                    <p class="feature-description">10大专业创作工具，涵盖从大纲到角色，从创意到世界观的全方位创作需求。</p>
+                    <ul class="feature-list">
+                        <li>细纲生成器 - 智能章节大纲</li>
+                        <li>角色生成器 - 支持1-15个角色</li>
+                        <li>脑洞生成器 - 创意灵感激发</li>
+                        <li>爆款书名生成器 - 批量生成</li>
+                        <li>世界观生成器 - 宏大设定构建</li>
+                        <li>金手指生成器 - 独特能力系统</li>
+                    </ul>
+                </div>
+
+                <div class="module-card">
+                    <span class="new-badge">NEW</span>
+                    <div class="feature-icon">📚</div>
+                    <h3 class="feature-title">拆书分析工具</h3>
+                    <p class="feature-description">学习写作技法的利器，通过AI深度解析优秀作品，提取可学习的写作技巧。</p>
+                    <ul class="feature-list">
+                        <li>多格式文档导入</li>
+                        <li>AI深度技法解析</li>
+                        <li>5种分析维度</li>
+                        <li>综合/结构/人物/语言/情节</li>
+                        <li>参考库管理</li>
+                        <li>创作指导建议</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用场景 -->
+    <section class="scenarios" id="scenarios">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">使用场景</h2>
+                <p class="section-subtitle">适用于各种创作需求，让AI成为你的写作伙伴</p>
+            </div>
+            <div class="scenarios-grid">
+                <div class="scenario-card">
+                    <h3>📖 短篇小说创作</h3>
+                    <ul class="scenario-steps">
+                        <li>1. 选择题材配置</li>
+                        <li>2. 选择提示词模板</li>
+                        <li>3. 编辑创作要求</li>
+                        <li>4. AI生成短篇小说</li>
+                        <li>5. 专业编辑器优化</li>
+                    </ul>
+                </div>
+
+                <div class="scenario-card">
+                    <h3>🌟 长篇小说创作</h3>
+                    <ul class="scenario-steps">
+                        <li>1. 选择类型模板</li>
+                        <li>2. AI生成大纲</li>
+                        <li>3. 章节式创作</li>
+                        <li>4. 实时统计跟踪</li>
+                    </ul>
+                </div>
+
+                <div class="scenario-card">
+                    <h3>🔧 专业工具辅助</h3>
+                    <ul class="scenario-steps">
+                        <li>1. 工具库选择功能</li>
+                        <li>2. 配置创作参数</li>
+                        <li>3. 选择提示词模板</li>
+                        <li>4. AI生成内容</li>
+                        <li>5. 保存到素材库</li>
+                    </ul>
+                </div>
+
+                <div class="scenario-card">
+                    <h3>📚 学习优秀作品</h3>
+                    <ul class="scenario-steps">
+                        <li>1. 导入作品文档</li>
+                        <li>2. 选择分析维度</li>
+                        <li>3. AI深度解析</li>
+                        <li>4. 提取写作技法</li>
+                        <li>5. 应用到创作</li>
+                    </ul>
+                </div>
+
+                <div class="scenario-card">
+                    <h3>💡 快速创意激发</h3>
+                    <ul class="scenario-steps">
+                        <li>1. 脑洞生成器</li>
+                        <li>2. 爆款题材发现</li>
+                        <li>3. 角色设定生成</li>
+                        <li>4. 世界观构建</li>
+                        <li>5. 开始创作</li>
+                    </ul>
+                </div>
+
+                <div class="scenario-card">
+                    <h3>🎯 目标导向创作</h3>
+                    <ul class="scenario-steps">
+                        <li>1. 制定写作计划</li>
+                        <li>2. 设定日/周/月目标</li>
+                        <li>3. 进度实时跟踪</li>
+                        <li>4. 成就激励系统</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 统计数据 -->
+    <section class="stats" id="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">100+</span>
+                    <div class="stat-label">创作者用户</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">1,00万+</span>
+                    <div class="stat-label">生成字数</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">23</span>
+                    <div class="stat-label">专业工具</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">8+</span>
+                    <div class="stat-label">AI模型支持</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA区域 -->
+    <section class="cta" id="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">开始您的AI创作之旅</h2>
+                <p class="cta-subtitle">
+                    加入91写作，让AI成为您最好的创作伙伴。
+                    无论是短篇小说还是长篇巨著，我们都为您提供最专业的创作工具。
+                </p>
+                <div class="hero-buttons">
+                    <a href="https://xiezuo.91hub.vip/index.html" class="btn btn-primary">立即开始创作</a>
+                    <a href="https://github.com/ponysb/91Writing" class="btn btn-github" target="_blank">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        开源
+                        <span class="github-stars">⭐ 获取中...</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>91写作</h3>
+                <p>专业的AI小说创作工具</p>
+                <p>让每个人都能成为小说家</p>
+            </div>
+            <div class="footer-section">
+                <h3>快速链接</h3>
+                <p><a href="#features">核心功能</a></p>
+                <p><a href="#modules">新功能模块</a></p>
+                <p><a href="https://xiezuo.91hub.vip">立即体验</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>帮助与支持</h3>
+                <p><a href="https://github.com/ponysb/91Writing">GitHub 源码</a></p>
+                <p><a href="#">问题反馈</a></p>
+                <p><a href="1090879115@qq.com">联系我们</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 91写作. Made with ❤️ by 91写作团队.</p>
+        </div>
+    </footer>
+
+    <!-- 右侧浮动客服组件 -->
+    <div class="customer-service">
+        <div class="cs-toggle" id="cs-toggle">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4a2 2 0 00-2 2v12a2 2 0 002 2h4l4 4 4-4h4a2 2 0 002-2V4a2 2 0 00-2-2zm-7 13h-2v-2h2v2zm0-4h-2V7h2v4z"/>
+            </svg>
+        </div>
+        <div class="cs-panel" id="cs-panel">
+            <div class="cs-header">
+                <h3>联系我们</h3>
+                <button class="cs-close" id="cs-close">×</button>
+            </div>
+            <div class="cs-content">
+                <a href="#" class="cs-item" onclick="showQRCode()">
+                    <div class="cs-icon">👥</div>
+                    <div class="cs-text">
+                        <span class="cs-title">加群交流</span>
+                        <span class="cs-desc">加入QQ交流群</span>
+                    </div>
+                </a>
+                <a href="https://github.com/ponysb/91Writing/issues" class="cs-item" target="_blank">
+                    <div class="cs-icon">🐛</div>
+                    <div class="cs-text">
+                        <span class="cs-title">问题反馈</span>
+                        <span class="cs-desc">报告Bug或建议</span>
+                    </div>
+                </a>
+                <a href="mailto:contact@91hub.vip" class="cs-item">
+                    <div class="cs-icon">📧</div>
+                    <div class="cs-text">
+                        <span class="cs-title">联系我们</span>
+                        <span class="cs-desc">邮箱联系支持</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- QQ群二维码弹窗 -->
+    <div class="qr-modal" id="qr-modal">
+        <div class="qr-content">
+            <div class="qr-header">
+                <h3>QQ交流群</h3>
+                <button class="qr-close" onclick="hideQRCode()">×</button>
+            </div>
+            <div class="qr-body">
+                <img src="./image/qrcode_1749609318081.jpg" alt="QQ群二维码" class="qr-image">
+                <p>扫码加入91写作交流群</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+            } else {
+                navbar.style.boxShadow = 'none';
+            }
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 移动端菜单切换
+        if (window.innerWidth <= 768) {
+            const navContainer = document.querySelector('.nav-container');
+            const menuButton = document.createElement('button');
+            menuButton.innerHTML = '☰';
+            menuButton.style.cssText = `
+                background: none;
+                border: none;
+                font-size: 1.5rem;
+                color: var(--text-primary);
+                cursor: pointer;
+                display: block;
+            `;
+            
+            menuButton.addEventListener('click', () => {
+                const navLinks = document.querySelector('.nav-links');
+                if (navLinks.style.display === 'flex') {
+                    navLinks.style.display = 'none';
+                } else {
+                    navLinks.style.display = 'flex';
+                    navLinks.style.flexDirection = 'column';
+                    navLinks.style.position = 'absolute';
+                    navLinks.style.top = '100%';
+                    navLinks.style.left = '0';
+                    navLinks.style.right = '0';
+                    navLinks.style.background = 'white';
+                    navLinks.style.padding = '1rem';
+                    navLinks.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                }
+            });
+            
+            navContainer.appendChild(menuButton);
+        }
+
+        // 获取GitHub Stars数量
+        async function fetchGitHubStars() {
+            try {
+                // 替换为实际的GitHub仓库API地址
+                const response = await fetch('https://api.github.com/repos/ponysb/91Writing');
+                const data = await response.json();
+                const stars = data.stargazers_count;
+                
+                // 格式化stars数量
+                let formattedStars;
+                if (stars >= 1000) {
+                    formattedStars = (stars / 1000).toFixed(1) + 'k';
+                } else {
+                    formattedStars = stars.toString();
+                }
+                
+                // 更新所有GitHub stars显示
+                document.querySelectorAll('.github-stars').forEach(el => {
+                    el.textContent = `⭐ ${formattedStars}`;
+                });
+            } catch (error) {
+                console.log('无法获取GitHub stars数量:', error);
+                // 如果获取失败，使用默认值
+                document.querySelectorAll('.github-stars').forEach(el => {
+                    el.textContent = '⭐ 1.2k';
+                });
+            }
+        }
+
+        // 页面加载完成后获取stars数量
+        window.addEventListener('load', fetchGitHubStars);
+
+        // 客服组件功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const csToggle = document.getElementById('cs-toggle');
+            const csPanel = document.getElementById('cs-panel');
+            const csClose = document.getElementById('cs-close');
+
+            // 切换客服面板显示
+            csToggle.addEventListener('click', function() {
+                csPanel.classList.toggle('show');
+            });
+
+            // 关闭客服面板
+            csClose.addEventListener('click', function() {
+                csPanel.classList.remove('show');
+            });
+
+            // 点击外部关闭面板
+            document.addEventListener('click', function(e) {
+                if (!csToggle.contains(e.target) && !csPanel.contains(e.target)) {
+                    csPanel.classList.remove('show');
+                }
+            });
+        });
+
+        // QQ群二维码弹窗功能
+        function showQRCode() {
+            const qrModal = document.getElementById('qr-modal');
+            qrModal.classList.add('show');
+        }
+
+        function hideQRCode() {
+            const qrModal = document.getElementById('qr-modal');
+            qrModal.classList.remove('show');
+        }
+
+        // 点击弹窗外部关闭
+        document.addEventListener('click', function(e) {
+            const qrModal = document.getElementById('qr-modal');
+            if (e.target === qrModal) {
+                hideQRCode();
+            }
+        });
+    </script>
+</body>
+</html> 
