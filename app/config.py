@@ -14,7 +14,7 @@ class Config:
     
     # Flask配置
     FLASK_HOST = os.getenv('FLASK_HOST', 'localhost')
-    FLASK_PORT = int(os.getenv('FLASK_PORT', '5177'))
+    FLASK_PORT = int(os.getenv('FLASK_PORT', '5173'))
     FLASK_DEBUG = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
     
     # 数据库配置

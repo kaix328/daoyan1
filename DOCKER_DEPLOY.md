@@ -24,7 +24,7 @@ docker build -t ai-director-assistant .
 # 运行容器
 docker run -d \
   --name ai-director \
-  -p 5177:5177 \
+  -p 5173:5173 \
   -e DASHSCOPE_API_KEY=your-api-key \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/logs:/app/logs \
@@ -38,7 +38,7 @@ docker run -d \
 
 ### 可选环境变量
 - `FLASK_HOST`: 服务主机 (默认: 0.0.0.0)
-- `FLASK_PORT`: 服务端口 (默认: 5177)
+- `FLASK_PORT`: 服务端口 (默认: 5173)
 - `FLASK_DEBUG`: 调试模式 (默认: false)
 - `DATABASE_URL`: 数据库URL (默认: sqlite:///app/scripts.db)
 - `LOG_LEVEL`: 日志级别 (默认: INFO)

@@ -34,9 +34,9 @@ jobs:
           cp style.css _site/
           cp script_gen.css _site/
           cp -r js _site/js
-          # 复制91Writing构建产物
-          mkdir -p _site/91Writing
-          cp -r 91Writing/dist/* _site/91Writing/
+          # 复制91Writing构建产物 (保留 dist 目录以保证路径一致)
+          mkdir -p _site/91Writing/dist
+          cp -r 91Writing/dist/* _site/91Writing/dist/
           # 复制图片资源
           cp -r 91Writing/image _site/91Writing/image 2>/dev/null || true
           # 创建 .nojekyll 防止 GitHub Pages 忽略下划线文件

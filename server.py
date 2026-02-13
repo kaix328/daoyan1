@@ -15,7 +15,8 @@ from db_manager import init_db, db_save_setting, db_get_setting, db_save_script,
 from export_manager import convert_to_docx, convert_to_xlsx
 
 # Server Configuration
-PORT = 5173
+PORT = int(os.getenv('PORT', 5173))
+VERSION = "v2.1.1"
 # Use the compatible-mode endpoint which supports both VL and Text models
 TARGET_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
 # Image Gen Endpoint (Flux via DashScope)
@@ -48,6 +49,18 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({'exists': bool(key)}).encode())
             return
 
+        if self.path == '/api/info':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({'version': VERSION, 'port': PORT, 'status': 'online'}).encode())
+            return
+            
+        if self.path == '/health':
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"OK")
             return
             
         # --- Novel Management Endpoints (GET) ---

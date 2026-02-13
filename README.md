@@ -52,7 +52,7 @@ python server.py
 ```
 
 5. **访问应用**
-打开浏览器访问: http://localhost:5177
+打开浏览器访问: http://localhost:5173
 
 ### 🎯 功能模块
 
@@ -152,7 +152,7 @@ DASHSCOPE_API_KEY=your_api_key_here
 
 # 服务器配置
 FLASK_HOST=localhost
-FLASK_PORT=5177
+FLASK_PORT=5173
 FLASK_DEBUG=false
 
 # 数据库配置
@@ -190,7 +190,7 @@ pytest --cov=app tests/
 docker build -t ai-director-assistant .
 
 # 运行容器
-docker run -p 5177:5177 ai-director-assistant
+docker run -p 5173:5173 ai-director-assistant
 ```
 
 ### 生产环境部署
