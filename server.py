@@ -16,7 +16,7 @@ from export_manager import convert_to_docx, convert_to_xlsx
 
 # Server Configuration
 PORT = int(os.getenv('PORT', 5173))
-VERSION = "v2.1.1"
+VERSION = "v2.1.2"
 # Use the compatible-mode endpoint which supports both VL and Text models
 TARGET_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
 # Image Gen Endpoint (Flux via DashScope)
@@ -69,6 +69,7 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         if self.path == '/api/novels':
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             novels = db_get_novels()
             self.wfile.write(json.dumps(novels).encode())
@@ -82,6 +83,7 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 chapters = db_get_chapters(novel_id)
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps(chapters).encode())
             except (IndexError, ValueError):
@@ -96,6 +98,7 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 if novel:
                     self.send_response(200)
                     self.send_header('Content-Type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
                     self.end_headers()
                     self.wfile.write(json.dumps(novel).encode())
                 else:
@@ -112,6 +115,7 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 if chapter:
                     self.send_response(200)
                     self.send_header('Content-Type', 'application/json')
+                    self.send_header('Access-Control-Allow-Origin', '*')
                     self.end_headers()
                     self.wfile.write(json.dumps(chapter).encode())
                 else:
@@ -325,6 +329,7 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 novel_id = db_save_novel(data)
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({'id': novel_id}).encode())
             except Exception as e:
@@ -341,6 +346,7 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 db_delete_novel(data['id'])
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({'status': 'ok'}).encode())
             except Exception as e:
@@ -357,6 +363,7 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 chapter_id = db_save_chapter(data)
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({'id': chapter_id}).encode())
             except Exception as e:
@@ -373,6 +380,7 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 db_delete_chapter(data['id'])
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({'status': 'ok'}).encode())
             except Exception as e:

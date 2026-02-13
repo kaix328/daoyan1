@@ -2610,6 +2610,9 @@ const saveRollingSummary = () => {
 const selectChapter = (chapter) => {
   // 自动保存当前章节
   saveCurrentChapter()
+  
+  // Update store selected chapter
+  novelStore.selectedChapter = chapter
   loadChapter(chapter)
 }
 
@@ -2619,15 +2622,20 @@ const loadChapter = (chapter) => {
     chapter.status = 'draft'
   }
   currentChapter.value = chapter
+  novelStore.selectedChapter = chapter
   content.value = chapter.content || ''
 }
 
-const saveCurrentChapter = () => {
+const saveCurrentChapter = async () => {
   if (currentChapter.value) {
     currentChapter.value.content = content.value
     currentChapter.value.wordCount = contentWordCount.value
     currentChapter.value.updatedAt = new Date()
-    saveNovelData()
+    
+    // Persist chapter content to backend
+    await novelStore.saveCurrentChapter()
+    // Persist novel metadata (word count, etc)
+    await saveNovelData()
   }
 }
 
@@ -2651,7 +2659,7 @@ const editChapterTitle = (chapter) => {
   showChapterDialog.value = true
 }
 
-const saveChapter = () => {
+const saveChapter = async () => {
   if (!chapterForm.value.title.trim()) {
     ElMessage.warning('请输入章节标题')
     return
@@ -2662,29 +2670,44 @@ const saveChapter = () => {
     editingChapter.value.title = chapterForm.value.title
     editingChapter.value.description = chapterForm.value.description
     editingChapter.value.status = chapterForm.value.status
+    
+    // Save metadata change to backend
+    await novelStore.saveCurrentChapter()
     ElMessage.success('章节信息已更新')
   } else {
     // 新增章节
     const newChapter = {
-      id: Date.now(),
+      id: null, // Let backend assign ID
+      novel_id: currentNovel.value.id,
       title: chapterForm.value.title,
       description: chapterForm.value.description,
       content: '',
       wordCount: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
-      status: chapterForm.value.status
+      status: chapterForm.value.status,
+      order_index: chapters.value.length
     }
-    chapters.value.push(newChapter)
-    ElMessage.success('章节创建成功')
     
-    // 自动选择新章节
-    setTimeout(() => {
-      selectChapter(newChapter)
-    }, 100)
+    // Use store to save new chapter and get its real ID
+    novelStore.selectedChapter = newChapter
+    await novelStore.saveCurrentChapter()
+    
+    // Update local list with the chapter that now has an ID
+    if (novelStore.selectedChapter.id) {
+       chapters.value.push(novelStore.selectedChapter)
+       ElMessage.success('章节创建成功')
+       
+       // 自动选择新章节
+       const savedChapter = novelStore.selectedChapter
+       setTimeout(() => {
+         selectChapter(savedChapter)
+       }, 100)
+    }
   }
   
   showChapterDialog.value = false
+  await saveNovelData()
 }
 
 const deleteChapter = (chapter) => {
