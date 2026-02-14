@@ -1,0 +1,195 @@
+.sg-layout { 
+    display: grid; 
+    grid-template-columns: 250px 320px 1fr; 
+    gap: 20px; 
+    height: calc(100vh - 140px); /* Constrain height to viewport */
+    min-height: 500px;
+}
+
+.sg-history { 
+    overflow-y: auto; 
+    background: var(--bg-card); 
+    border-right: 1px solid var(--border-color); 
+    padding: 10px; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.sg-controls { 
+    overflow-y: auto; 
+    padding-right: 10px; 
+}
+
+.sg-preview { 
+    display: flex; 
+    flex-direction: column; 
+    height: 100%; 
+    overflow: hidden; /* Prevent spill */
+}
+
+.sg-section { 
+    margin-bottom: 20px; 
+    background: var(--bg-card); 
+    padding: 15px; 
+    border-radius: 8px; 
+    border: 1px solid var(--border-color); 
+}
+
+.sg-section h3 { 
+    font-size: 1rem; 
+    margin-bottom: 15px; 
+    border-left: 3px solid var(--primary); 
+    padding-left: 10px; 
+    color: var(--text-primary); 
+}
+
+.sg-field { margin-bottom: 15px; }
+.sg-field label { display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 0.9rem; }
+.sg-select, .sg-input, .sg-textarea { width: 100%; padding: 10px; background: #fff; border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 4px; transition: border-color 0.2s; }
+.sg-select:focus, .sg-input:focus, .sg-textarea:focus { outline: none; border-color: var(--primary); }
+.sg-textarea { resize: vertical; min-height: 80px; }
+
+/* Tabs */
+.sg-tabs { display: flex; gap: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+.sg-tab { padding: 10px 20px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--text-muted); font-weight: 500; }
+.sg-tab.active { border-bottom-color: var(--primary); color: var(--text-primary); }
+.sg-tab-content { display: none; flex: 1; overflow-y: auto; height: 100%; }
+.sg-tab-content.active { display: flex; flex-direction: column; }
+
+/* Output Area */
+#sg-output, #sg-analysis-output { 
+    width: 100%; 
+    background: #fff; 
+    border: 1px solid var(--border-color); 
+    border-radius: 4px; 
+    padding: 30px; 
+    color: var(--text-primary); 
+    flex: 1; /* Take remaining height */
+    overflow-y: auto;
+    font-family: 'Noto Sans SC', sans-serif;
+    line-height: 1.6;
+}
+
+/* Markdown Styles */
+#sg-output h1, #sg-analysis-output h1 { font-size: 24px; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-bottom: 20px; color: #111; }
+#sg-output h2, #sg-analysis-output h2 { font-size: 20px; margin-top: 25px; margin-bottom: 15px; border-left: 4px solid var(--primary); padding-left: 10px; background: #eee; padding: 5px 10px; }
+#sg-output h3, #sg-analysis-output h3 { font-size: 18px; margin-top: 20px; color: #444; }
+#sg-output ul, #sg-analysis-output ul, #sg-output ol, #sg-analysis-output ol { margin-left: 20px; margin-bottom: 15px; }
+#sg-output p, #sg-analysis-output p { margin-bottom: 15px; }
+#sg-output blockquote, #sg-analysis-output blockquote { border-left: 4px solid #ccc; margin: 0; padding-left: 15px; color: #666; font-style: italic; }
+
+/* Table Styles */
+#sg-output table, #sg-analysis-output table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+#sg-output th, #sg-analysis-output th, #sg-output td, #sg-analysis-output td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+#sg-output th, #sg-analysis-output th { background-color: #f2f2f2; font-weight: bold; color: #333; }
+#sg-output tr:nth-child(even), #sg-analysis-output tr:nth-child(even) { background-color: #fafafa; }
+#sg-output tr:hover, #sg-analysis-output tr:hover { background-color: #f0f0f0; }
+
+/* Interactive Table Actions (Optimization 5 & 6) */
+.sg-table-actions { width: 100px; text-align: center !important; }
+.sg-table-actions-cell { text-align: center !important; white-space: nowrap; }
+.sg-row-regen-btn, .sg-row-del-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+.sg-row-regen-btn { color: var(--primary); }
+.sg-row-regen-btn:hover { background: rgba(var(--primary-rgb), 0.1); }
+.sg-row-del-btn { color: #ff4757; }
+.sg-row-del-btn:hover { background: rgba(255, 71, 87, 0.1); }
+
+.sg-editable-td:focus {
+    background: #fff8e1;
+    outline: 2px solid var(--primary);
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+}
+
+#sg-add-row-btn {
+    background: #fff !important;
+    color: var(--primary) !important;
+    border: 1px dashed var(--primary) !important;
+    display: block;
+    width: 200px;
+    margin: 15px auto !important;
+    transition: all 0.3s;
+}
+#sg-add-row-btn:hover {
+    background: var(--primary) !important;
+    color: #fff !important;
+    border-style: solid !important;
+}
+
+.sg-actions { display: flex; gap: 10px; margin-top: 10px; }
+
+/* History Items */
+.sg-history-item { padding: 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.2s; }
+.sg-history-item:hover { background: var(--bg-sidebar-hover); color: #fff; }
+.sg-history-item.active { background: var(--primary); color: #fff; border-left: 3px solid transparent; }
+.history-title { font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; color: var(--text-primary); }
+.history-meta { font-size: 0.8rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
+.history-fav { color: #ff4757; }
+.history-delete-btn { 
+    background: none; 
+    border: none; 
+    color: var(--text-muted); 
+    cursor: pointer; 
+    padding: 2px 4px; 
+    border-radius: 3px; 
+    transition: all 0.2s;
+    font-size: 0.8rem;
+}
+.history-delete-btn:hover { 
+    color: #ff4757; 
+    background: rgba(255, 71, 87, 0.1); 
+}
+.sg-history-item:hover .history-delete-btn { 
+    color: #fff; 
+}
+.sg-history-item:hover .history-delete-btn:hover { 
+    color: #ff4757; 
+    background: rgba(255, 71, 87, 0.2); 
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+    .sg-layout {
+        grid-template-columns: 200px 1fr;
+        grid-template-rows: auto 1fr;
+    }
+    .sg-history {
+        grid-row: 1 / -1;
+    }
+    .sg-controls {
+        grid-column: 2;
+        max-height: 300px;
+    }
+    .sg-preview {
+        grid-column: 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .sg-layout {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+    }
+    .sg-history {
+        height: 200px;
+        overflow-y: auto;
+    }
+    .sg-controls {
+        height: auto;
+        overflow-y: visible;
+    }
+    .sg-preview {
+        height: 600px;
+    }
+    #sg-output {
+        min-height: 400px;
+    }
+}
