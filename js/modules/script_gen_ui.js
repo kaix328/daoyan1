@@ -9,6 +9,7 @@ import { retryWithBackoff, shouldRetryImageGenError } from '../utils/retry_utils
 import { scriptCache } from '../utils/cache_utils.js';
 import { compressImage, getImageSize, imageLazyLoader } from '../utils/image_utils.js';
 import { progressManager, BatchProgressManager } from '../utils/progress_utils.js?v=2';
+import { performanceMonitor } from '../utils/performance_utils.js';
 import { ScriptGenView } from './script_gen_view.js';
 
 export class ScriptGeneratorManager {
@@ -815,7 +816,7 @@ export class ScriptGeneratorManager {
         }
     }
 
-    optimizeScriptFromAnalysis() {
+    async optimizeScriptFromAnalysis() {
         // Need to check content of analysis div
         const analysisEl = document.getElementById('sg-analysis-output');
         if (!analysisEl || analysisEl.innerText.includes('点击上方按钮开始分析')) {
@@ -839,51 +840,38 @@ export class ScriptGeneratorManager {
         try {
             const instruction = `请根据以下的分析报告中的建议，对脚本进行优化和修改。保留脚本原有的Markdown格式。\n\n【分析报告参考】：\n${analysisText}`;
 
-            // Reuse refine logic but manually call API since we can't easily reuse refineScript without input element manipulation
-            // Actually, we can just set the input and call refineScript!
-            // But refineScript also calls API.
-            // Let's implement directly for more control or reuse?
-            // Reusing effectively reduces code duplication.
+            const prompt = buildRefinePrompt(this.generatedScript, instruction, this.lastParams);
+            const apiStartTime = Date.now();
+            const result = await API.callQwenAPI(prompt);
+            const apiDuration = Date.now() - apiStartTime;
 
-            // However, refineScript reads from DOM.
-            // Let's set DOM and trigger?
-            // document.getElementById('sg-refine-input').value = instruction;
-            // this.refineScript();
+            performanceMonitor.recordAPICall('script_optimization', apiDuration, true);
 
-            // But refineScript expects user interaction potentially or just works.
-            // Let's copy logic to avoid issues with refineScript's UI feedback loop (like "Switch back to preview tab").
-            // Actually optimizeScriptFromAnalysis DOES switch back too.
+            let content = result.choices ? result.choices[0].message.content : (result.output ? result.output.text : result);
 
-            // I'll stick to direct implementation here to match previous behavior but cleaner.
+            // Clean up Markdown code blocks if present (DeepSeek/Qwen often wraps output)
+            const mdMatch = content.match(/```markdown([\s\S]*?)```/i) || content.match(/```([\s\S]*?)```/i);
+            if (mdMatch) {
+                content = mdMatch[1].trim();
+            }
 
-            (async () => {
-                const prompt = buildRefinePrompt(this.generatedScript, instruction);
-                const apiStartTime = Date.now();
-                const result = await API.callQwenAPI(prompt);
-                const apiDuration = Date.now() - apiStartTime;
+            this.generatedScript = content;
+            this.view.renderOutput(content);
 
-                performanceMonitor.recordAPICall('script_optimization', apiDuration, true);
+            if (this.currentScriptId) {
+                await ScriptDB.saveScript({
+                    id: this.currentScriptId,
+                    content: content,
+                    theme: document.getElementById('sg-theme').value,
+                    type: this.category,
+                    platform: document.getElementById('sg-platform').value,
+                    metadata: this.lastParams || {}
+                });
+            }
 
-                const content = result.choices ? result.choices[0].message.content : (result.output ? result.output.text : result);
-
-                this.generatedScript = content;
-                this.view.renderOutput(content);
-
-                if (this.currentScriptId) {
-                    await ScriptDB.saveScript({
-                        id: this.currentScriptId,
-                        content: content,
-                        theme: document.getElementById('sg-theme').value,
-                        type: this.category,
-                        platform: document.getElementById('sg-platform').value,
-                        metadata: this.lastParams || {}
-                    });
-                }
-
-                UI.showSuccess('脚本已根据分析报告优化！');
-                const previewTab = document.querySelector('.sg-tab[data-tab="preview"]');
-                if (previewTab) previewTab.click();
-            })();
+            UI.showSuccess('脚本优化完成！');
+            const previewTab = document.querySelector('.sg-tab[data-tab="preview"]');
+            if (previewTab) previewTab.click();
 
         } catch (e) {
             console.error(e);

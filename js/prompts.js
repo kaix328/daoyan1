@@ -285,27 +285,31 @@ export function buildScriptGenPrompt(params) {
 - **第二幕：展开与冲突** (占60%)：层层递进的细节、反转或深度分析。
 - **第三幕：高潮与总结** (占20%)：给出结论、情感升华或行动号召。
 
-请使用 Markdown 表格输出详细分镜表，表头包含：| 幕次 | 序号 | 画面内容 | 运镜建议 | 音效/台词 |
+请使用 Markdown 表格输出详细分镜表，表头包含：| 幕次 | 序号 | 画面内容 | 运镜建议 (焦段/光圈) | 音效/台词 |
 - **注意**：针对长视频，景别变化应更加多元，注重节奏起伏。`;
     } else {
         structurePrompt = `
 # 2. 详细分镜表
-请使用 Markdown 表格形式，表头包含：| 序号 | 景别 | 时长 | 画面内容 | 运镜/剪辑 | 音效/台词 |
+请使用 Markdown 表格形式，表头包含：| 序号 | 景别 | 时长 | 画面内容 | 运镜/摄影参数 | 音效/台词 |
 - **注意**：表格内容中严禁使用换行符，确保每一行都是有效的 Markdown 表格行，以便于 Excel 导出。
-- **时长**：预估镜头时长（如 2s, 4.5s）。
-  **必须执行思维链 (Chain of Thought)**：
-  1. 先列出所有镜头的预估时长。
-  2. 计算当前总时长。
-  3. 如果总时长不等于目标时长 (${duration})，调整各个镜头的时长直到完全匹配。
-  4. 最终输出的表格中，所有镜头时长之和必须严格等于 ${duration}。
+- **时长**：预估镜头时长（如 2s, 4.5s）。当前总时长必须严格等于 ${duration}。
 - **画面内容**：包含动作、表情、道具、布光。
-- **运镜/剪辑**：
-  - 运镜：推、拉、摇、移、跟、升降、手持震动等。
-  - 剪辑：硬切(Hard Cut)、叠化(Dissolve)、匹配剪辑(Match Cut)、淡入淡出等。
+- **运镜/摄影参数** (关键)：
+  - **必须指定焦段**：(e.g., 16mm 广角, 35mm 人文, 50mm 标准, 85mm 特写, 100mm 微距)
+  - **必须指定光圈**：(e.g., f/11 全景深, f/1.8 浅景深)
+  - **运镜方式**：推、拉、摇、移、跟、升降、手持震动 (Handheld), 斯坦尼康 (Steadicam)。
 - **音效/台词**：
   - [人声]：对白、旁白 (VO)。
-  - [SFX]：具体动作音效（如“脚步声”、“玻璃碎裂”）。
+  - [SFX]：具体动作音效。
   - [BGM]：背景音乐情绪。`;
+    }
+
+    // Budget Constraints
+    let budgetConstraint = "";
+    if (budget === "低") {
+        budgetConstraint = "【低预算约束】：严禁使用航拍、大型群演、昂贵特效。请尽可能使用自然光、手持摄影和巧妙的剪辑来降低成本。场景应限制在日常生活场景。";
+    } else if (budget === "高") {
+        budgetConstraint = "【高预算授权】：允许使用电影级设备（如伸缩炮、航拍、水下摄影）、复杂特效（CGI）、定制置景和大规模群演。追求极致的视觉奇观。";
     }
 
     return `你是一位顶级广告导演和短视频编剧专家 (ScriptCraft AI)。
@@ -325,10 +329,21 @@ ${extra ? `【额外要求】：${extra}` : ''}
 
 【进阶参数】：
 - 场景数量：${sceneCount}
-- 预算等级：${budget}
+- 预算等级：${budget} ${budgetConstraint}
 - 创意度：${creativity}
 ${castingPrompt}${cinePrompt}${soundPrompt}
 ${imagePrompt}
+
+请严格遵守以下创作步骤：
+
+1. **思维链 (Chain of Thought)**：在开始写作前，请在 \`<thinking>\` 标签内进行深思熟虑：
+   - 分析目标受众的痛点和观看心理。
+   - 构思一个核心冲突或视觉钩子 (Hook)。
+   - 检查预算约束 (${budget})，确保场景可落地。
+   - 规划视觉风格与品牌的结合点。
+   （此部分仅用于你的思考，前端不渲染，但必须输出）
+
+2. **正文创作**：输出 Markdown 格式的脚本。
 
 请严格按照 Markdown 格式输出，必须包含以下模块：
 
@@ -352,15 +367,35 @@ ${structurePrompt}
 请开始创作。`;
 }
 
-export function buildRefinePrompt(currentScript, instruction) {
-    return `你是一位专业的剧本医生 (Script Doctor)。请根据用户的指令，修改以下分镜脚本。
+export function buildRefinePrompt(currentScript, instruction, originalParams = null) {
+    let contextStr = "";
+    if (originalParams) {
+        contextStr = `
+【原始创作约束 (必须保持)】：
+- 类型：${originalParams.category} - ${originalParams.subCategory}
+- 主题：${originalParams.theme}
+- 核心受众：${originalParams.audience}
+- 预算等级：${originalParams.budget} (请确保修改后的脚本仍符合此预算)
+- 品牌信息：${originalParams.brandInfo || '无'}
+`;
+    }
 
-【修改指令】：${instruction}
+    return `你是一位专业的剧本医生 (Script Doctor)。请根据用户的指令，对以下分镜脚本进行专业级的优化和润色。
+
+${contextStr}
+
+【修改指令】：
+${instruction}
 
 【原始脚本】：
 ${currentScript}
 
-请直接输出修改后的完整脚本（保持原有的 Markdown 格式），无需解释修改理由。`;
+请严格遵守以下规则：
+1. **保持原有 Markdown 格式和表格结构**。
+2. **严格遵守原始创作约束**，不要因为修改而偏离核心主题或预算。
+3. 如果指令要求优化运镜，请使用具体的**焦段**和**光圈**术语。
+
+请直接输出修改后的完整脚本内容，不要输出任何开场白、解释或结束语 (Do not output any conversational filler)。`;
 }
 
 export function buildAnalyzePrompt(script) {

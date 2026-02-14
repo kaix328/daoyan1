@@ -16,7 +16,7 @@ from export_manager import convert_to_docx, convert_to_xlsx
 
 # Server Configuration
 PORT = int(os.getenv('PORT', 5173))
-VERSION = "v2.1.2"
+VERSION = "v2.1.3"
 # Use the compatible-mode endpoint which supports both VL and Text models
 TARGET_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
 # Image Gen Endpoint (Flux via DashScope)
@@ -518,7 +518,7 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     if stored_key:
                         auth_header = f'Bearer {stored_key}'
                     else:
-                        print("Warning: No API Key found in header or DB")
+                        print("Warning: No API Key found in header or DB", flush=True)
 
                 # Forward headers
                 headers = {
@@ -526,15 +526,31 @@ class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     'Authorization': auth_header
                 }
                 
-                print(f"🚀 Proxying to: {TARGET_URL}")
+                print(f"🚀 Proxying to: {TARGET_URL}", flush=True)
+                # Debug: log snippet of request
+                try:
+                    req_body_sample = post_data.decode('utf-8')[:200]
+                    print(f"📦 Request Body Snippet: {req_body_sample}...")
+                except:
+                    print(f"📦 Request Body (binary, size: {len(post_data)})")
+
                 req = urllib.request.Request(TARGET_URL, data=post_data, headers=headers, method='POST')
                 
                 try:
                     with urllib.request.urlopen(req, timeout=300) as response:
                         res_data = response.read()
                         print(f"✅ API Response: {response.status}")
+                        
+                        # Debug: log snippet of response
+                        try:
+                            res_sample = res_data.decode('utf-8')[:200]
+                            print(f"📄 Response Body Snippet: {res_sample}...", flush=True)
+                        except:
+                             print(f"📄 Response Body (binary, size: {len(res_data)})", flush=True)
+
                         self.send_response(response.status)
                         self.send_header('Content-Type', 'application/json')
+                        self.send_header('Content-Length', str(len(res_data)))
                         self.send_header('Access-Control-Allow-Origin', '*')
                         self.end_headers()
                         self.wfile.write(res_data)
