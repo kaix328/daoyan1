@@ -153,12 +153,28 @@ async function callQwenAPIInternal(prompt, images = null, apiKey = null, signal 
                 throw new Error(errorMessage);
             }
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                console.error("JSON Parse Error:", jsonError);
+                throw new Error(`API返回格式错误 (无法解析JSON): ${jsonError.message}`);
+            }
 
             if (data.choices && data.choices.length > 0) {
-                return data.choices[0].message.content;
+                let content = data.choices[0].message.content;
+                // DeepSeek R1 Compatibility: Strip <think> tags
+                content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+                return content;
+            } else if (data.output && data.output.text) {
+                // Support DashScope native format
+                let content = data.output.text;
+                // DeepSeek R1 Compatibility: Strip <think> tags
+                content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+                return content;
             } else {
-                throw new Error("API返回格式异常");
+                console.error("Unexpected API Response format:", data);
+                throw new Error("API返回格式异常：缺少内容字段");
             }
 
         } catch (error) {

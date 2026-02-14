@@ -384,6 +384,12 @@ export class ScriptGenView {
                 return match;
             });
 
+            // NEW: Inject "Copy Table" button before the table
+            if (html.includes('<table')) {
+                html = html.replace('<table', '<div class="sg-table-wrapper"><div class="sg-table-tools"><button class="sg-copy-table-btn btn btn-small btn-secondary"><i class="fas fa-copy"></i> 复制为表格 (Excel)</button></div><table');
+                html = html.replace('</table>', '</table></div>');
+            }
+
             outputEl.innerHTML = html;
 
             // Add "Add Row" button if there's a table
@@ -394,10 +400,58 @@ export class ScriptGenView {
                 addBtn.style.margin = '10px 0';
                 addBtn.innerHTML = '<i class="fas fa-plus"></i> 添加镜头行';
                 outputEl.appendChild(addBtn);
+
+                // Bind Copy Table Button
+                const copyBtn = outputEl.querySelector('.sg-copy-table-btn');
+                if (copyBtn) {
+                    copyBtn.addEventListener('click', (e) => this.handleTableCopy(e));
+                }
             }
         } else {
             outputEl.innerHTML = `<pre>${content}</pre>`;
         }
+    }
+
+    handleTableCopy(e) {
+        const btn = e.target.closest('button');
+        const wrapper = btn.closest('.sg-table-wrapper');
+        const table = wrapper.querySelector('table');
+
+        if (!table) return;
+
+        // Extract data
+        let clipboardText = "";
+
+        // Header
+        const headers = Array.from(table.querySelectorAll('th')).map(th => th.innerText.replace('操作', '').trim()).filter(t => t);
+        clipboardText += headers.join('\t') + '\n';
+
+        // Body
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const cells = Array.from(row.querySelectorAll('td'));
+            // Exclude last cell (Actions)
+            const rowData = cells.slice(0, -1).map(td => {
+                // Clean text: remove newlines inside cells to avoid breaking CSV/TSV
+                return td.innerText.replace(/(\r\n|\n|\r)/gm, " ").trim();
+            });
+            clipboardText += rowData.join('\t') + '\n';
+        });
+
+        navigator.clipboard.writeText(clipboardText).then(() => {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+            btn.classList.add('btn-success');
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('btn-success');
+            }, 2000);
+
+            // Optional: UI.showToast not imported here, but local feedback is good enough
+        }).catch(err => {
+            console.error('Failed to copy', err);
+            alert('复制失败，请手动选择表格内容复制');
+        });
     }
 
     renderAnalysis(content) {
